@@ -177,14 +177,6 @@ nvim ~/.config/hypr/hyprland.conf
 Suggested baseline:
 
 ```ini
-# Workspaces
-workspace=1
-workspace=2
-workspace=3
-workspace=4
-workspace=5
-workspace=6
-
 # Steam
 windowrule {
     name = steam-main
