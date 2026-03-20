@@ -147,7 +147,7 @@ These break **VAC matchmaking**.
 Set in Steam:
 
 ```bash
-SDL_AUDIODRIVER=pulse PULSE_LATENCY_MSEC=60 VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json %command% -console -novid
+-console -novid
 ```
 
 ---
