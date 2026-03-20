@@ -1,4 +1,3 @@
----
 
 # 🜲 Omarchy Laptop Config
 
