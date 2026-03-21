@@ -177,21 +177,45 @@ nvim ~/.config/hypr/hyprland.conf
 Suggested baseline:
 
 ```ini
-# Steam
+# =============================
+# Steam (ALL windows controlled)
+# =============================
+
 windowrule {
-    name = steam-main
+    name = steam-all
+    match:class = ^steam.*$
     workspace = 1
-    match:class = ^steam$
     float = on
-    center = true
+    center = on
 }
 
-# Dota 2
+windowrule {
+    name = steam-title-fallback
+    match:title = ^(Steam|Updating|Working|Loading).*
+    workspace = 1
+    float = on
+    center = on
+}
+
+# =============================
+# Dota 2 (launched via Steam)
+# =============================
+
 windowrule {
     name = dota2-main
+    match:class = ^(steam_app_570|dota2)$
     workspace = 1
-    match:class = ^dota2$
     fullscreen = on
+    no_anim = on
+}
+
+# -----------------------------
+# Pointer configuration (example)
+# -----------------------------
+device {
+    name = logitech-g300s-optical-gaming-mouse
+    sensitivity = 0.20
+    accel_profile = adaptative
 }
 ```
 
