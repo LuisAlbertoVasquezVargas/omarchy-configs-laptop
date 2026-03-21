@@ -147,7 +147,7 @@ These break **VAC matchmaking**.
 Set in Steam:
 
 ```bash
--console -novid
+SDL_AUDIODRIVER=pulse PULSE_LATENCY_MSEC=60 %command% -console -novid
 ```
 
 ---
