@@ -112,7 +112,7 @@ Locate or add:
 
 ```toml
 [font]
-size = 14.0
+size = 13.0
 ```
 
 ### Notes
@@ -140,9 +140,10 @@ yay -S ferdium-bin
 ### Setup
 
 1. Open Ferdium
-2. Add service → **WhatsApp**
-3. Scan QR code
-4. (Optional) Add:
+2. Choose **“Use without account”** when prompted
+3. Add service → **WhatsApp**
+4. Scan QR code
+5. (Optional) Add:
 
    * Telegram
    * Discord
