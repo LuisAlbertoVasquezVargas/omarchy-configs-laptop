@@ -1,13 +1,17 @@
-
 # 🜲 Omarchy Laptop Config
 
 Minimal Omarchy setup focused on **stability, gaming, and daily productivity** on a single-display laptop.
 
-This configuration prioritizes:
+---
 
-* Native Linux gaming (Dota 2 matchmaking working)
-* Clean Hyprland workflow
-* Lightweight, reliable UI components
+## 📦 Clone Repository
+
+```bash
+git clone https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git
+cd omarchy-configs-laptop
+```
+
+> Copy the configs manually into your `~/.config` directory as needed.
 
 ---
 
@@ -52,7 +56,8 @@ Ensure persistent workspaces:
 ### Reload
 
 ```bash
-pkill waybar && waybar &
+pkill waybar
+hyprctl dispatch exec waybar
 ```
 
 ---
@@ -245,4 +250,3 @@ Focus is on:
 
 **Author:** Luis Vásquez
 
----
