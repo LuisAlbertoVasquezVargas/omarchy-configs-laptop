@@ -53,7 +53,7 @@ Main tools used in this setup:
 
 * **Hyprland** → Wayland compositor
 * **Waybar** → status bar
-* **Ghostty** → terminal emulator
+* **Alacritty** → terminal emulator (system default)
 * **Brave** → default browser
 * **Ferdium** → messaging hub (WhatsApp Web, etc.)
 * **Steam** → gaming platform
@@ -94,20 +94,35 @@ hyprctl dispatch exec waybar
 
 ---
 
-## 🔤 Ghostty (Terminal)
+## 🔤 Alacritty (Terminal)
 
-Default terminal for this setup.
+Current system default terminal (based on `~/.config/xdg-terminals.list`).
+
+### Config
 
 Open:
 
 ```bash
-nvim ~/.config/ghostty/config
+nvim ~/.config/alacritty/alacritty.toml
 ```
 
-Set:
+### Font Size
 
-```ini
-font-size = 14
+Locate or add:
+
+```toml
+[font]
+size = 14.0
+```
+
+### Notes
+
+* If the file does not exist, Alacritty is using internal defaults
+* You can create it manually if needed
+* Older setups may still use:
+
+```bash
+~/.config/alacritty.yml
 ```
 
 ---
