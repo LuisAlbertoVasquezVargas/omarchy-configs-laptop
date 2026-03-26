@@ -4,6 +4,38 @@ Minimal Omarchy setup focused on **stability, gaming, and daily productivity** o
 
 ---
 
+## 🌐 Brave Browser
+
+### Install
+
+```bash
+yay -S brave-bin
+```
+
+### Setup
+
+1. Open Brave
+2. Set as default browser
+3. Go to settings → search engine
+4. Set:
+
+   * Normal: Google
+   * Private: Google
+
+---
+
+## 🔐 GitHub Authentication (CLI)
+
+Authenticate with GitHub to enable repo cloning and management:
+
+```bash
+gh auth login
+```
+
+Follow the prompts (recommended: login via browser).
+
+---
+
 ## 📦 Clone Repository
 
 ```bash
@@ -77,26 +109,6 @@ Set:
 ```ini
 font-size = 14
 ```
-
----
-
-## 🌐 Brave Browser
-
-### Install
-
-```bash
-yay -S brave-bin
-```
-
-### Setup
-
-1. Open Brave
-2. Set as default browser
-3. Go to settings → search engine
-4. Set:
-
-   * Normal: Google
-   * Private: Google
 
 ---
 
