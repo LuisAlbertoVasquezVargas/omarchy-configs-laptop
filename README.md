@@ -72,6 +72,26 @@ Open:
 nvim ~/.config/waybar/config.jsonc
 ```
 
+### Manual Adjustments
+
+Update or add the following modules inside your config:
+
+```jsonc
+"clock": {
+  "format": "{:L%d %B %A %H:%M}",
+  "format-alt": "{:L%d %B %A %H:%M}",
+  "tooltip": false,
+  "on-click-right": "omarchy-launch-floating-terminal-with-presentation omarchy-tz-select"
+},
+
+"battery": {
+  "format": "{capacity}% {icon}",
+  "format-discharging": "{capacity}% {icon}"
+}
+```
+
+### Persistent Workspaces
+
 Ensure persistent workspaces:
 
 ```jsonc
@@ -262,21 +282,8 @@ hyprctl reload
 
 ---
 
-## 🧠 Philosophy
-
-This setup avoids:
-
-* Hardcoded monitor layouts
-* Overcomplicated automation
-* Wayland wrappers that break games
-
-Focus is on:
-
-* Stability
-* Predictability
-* Native performance
-
----
-
 **Author:** Luis Vásquez
+
+```
+```
 
