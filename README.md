@@ -21,6 +21,7 @@ yay -S brave-bin
 
    * Normal: Google
    * Private: Google
+5. Enable dark theme (Settings → Appearance → Theme → Dark)
 
 ---
 
@@ -42,8 +43,6 @@ Follow the prompts (recommended: login via browser).
 git clone https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git
 cd omarchy-configs-laptop
 ```
-
-> Copy the configs manually into your `~/.config` directory as needed.
 
 ---
 
@@ -115,16 +114,6 @@ Locate or add:
 size = 13.0
 ```
 
-### Notes
-
-* If the file does not exist, Alacritty is using internal defaults
-* You can create it manually if needed
-* Older setups may still use:
-
-```bash
-~/.config/alacritty.yml
-```
-
 ---
 
 ## 💬 Ferdium (WhatsApp + Messaging)
@@ -157,6 +146,14 @@ yay -S ferdium-bin
 
 ```bash
 sudo pacman -S steam
+```
+
+### Vulkan Driver (Intel iGPU - Recommended)
+
+During installation, when prompted to choose a provider for `lib32-vulkan-driver`, select:
+
+```text
+7) lib32-vulkan-intel
 ```
 
 ---
