@@ -1,3 +1,4 @@
+
 # 🜲 Omarchy Laptop Config
 
 Minimal Omarchy setup focused on **stability, gaming, and daily productivity** on a single-display laptop.
@@ -10,7 +11,7 @@ Minimal Omarchy setup focused on **stability, gaming, and daily productivity** o
 
 ```bash
 yay -S brave-bin
-```
+````
 
 ### Setup
 
@@ -198,13 +199,17 @@ SDL_AUDIODRIVER=pulse PULSE_LATENCY_MSEC=60 %command% -console -novid
 
 Minimal assumptions, no forced layouts.
 
+### Config
+
 Open:
 
 ```bash
 nvim ~/.config/hypr/hyprland.conf
 ```
 
-Suggested baseline:
+### Hyprland Rules (Append)
+
+Add the following rules **at the end of your config file** (do not replace existing settings):
 
 ```ini
 # =============================
@@ -249,7 +254,7 @@ device {
 }
 ```
 
-Reload:
+### Reload
 
 ```bash
 hyprctl reload
