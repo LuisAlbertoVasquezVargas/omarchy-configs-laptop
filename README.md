@@ -246,6 +246,7 @@ windowrule {
 
 windowrule {
     name = steam-title-fallback
+    match:class = ^steam$
     match:title = ^(Steam|Updating|Working|Loading).*
     workspace = 1
     float = on
