@@ -5,6 +5,16 @@ Minimal Omarchy setup focused on **stability, gaming, and daily productivity** o
 
 ---
 
+## 🛠️ System Information
+
+This configuration is optimized for:
+* **OS:** Omarchy 3.4.2 (Stable Branch)
+* **Kernel:** Linux 6.19.13-a1
+* **WM:** Hyprland 0.54.3
+* **Verification:** Run `omarchy-fetch` or `fastfetch` to confirm your local version. (omarchy-launch-about)
+
+---
+
 ## 🌐 Brave Browser
 
 ### Install
@@ -145,7 +155,11 @@ Ferdium is used to centralize messaging apps like **WhatsApp Web**, avoiding pho
 ### Install
 
 ```bash
-yay -S ferdium-bin
+# Ensure system is synced and flatpak is installed
+sudo pacman -Syyu flatpak
+
+# Install Ferdium via Flathub
+flatpak install flathub org.ferdium.Ferdium
 ```
 
 ### Setup
