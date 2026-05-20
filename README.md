@@ -22,7 +22,8 @@ This configuration is optimized for:
 
 ```bash
 yay -S brave-bin --noconfirm
-````
+
+```
 
 ### Setup
 
@@ -30,9 +31,10 @@ yay -S brave-bin --noconfirm
 2. Set as default browser
 3. Go to settings → search engine
 4. Set:
+* Normal: Google
+* Private: Google
 
-   * Normal: Google
-   * Private: Google
+
 5. Enable dark theme (Settings → Appearance → Theme → Dark)
 
 ---
@@ -43,6 +45,7 @@ Authenticate with GitHub to enable repo cloning and management:
 
 ```bash
 gh auth login
+
 ```
 
 Follow the prompts (recommended: login via browser).
@@ -53,8 +56,9 @@ Follow the prompts (recommended: login via browser).
 
 ```bash
 cd ~/Projects
-git clone https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git
+git clone [https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git](https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git)
 cd omarchy-configs-laptop
+
 ```
 
 ---
@@ -82,6 +86,7 @@ Open:
 
 ```bash
 nvim ~/.config/waybar/config.jsonc
+
 ```
 
 ### Manual Adjustments
@@ -100,6 +105,7 @@ Update or add the following modules inside your config:
   "format": "{capacity}% {icon}",
   "format-discharging": "{capacity}% {icon}"
 }
+
 ```
 
 ### Persistent Workspaces
@@ -116,6 +122,7 @@ Ensure persistent workspaces:
   "6": [],
   "7": []
 }
+
 ```
 
 ### Reload
@@ -123,6 +130,7 @@ Ensure persistent workspaces:
 ```bash
 pkill waybar
 hyprctl dispatch exec waybar
+
 ```
 
 ---
@@ -137,6 +145,7 @@ Open:
 
 ```bash
 nvim ~/.config/alacritty/alacritty.toml
+
 ```
 
 ### Font Size
@@ -146,6 +155,7 @@ Locate or add:
 ```toml
 [font]
 size = 13.0
+
 ```
 
 ---
@@ -159,6 +169,7 @@ Ferdium is used to centralize messaging apps like **WhatsApp Web**, avoiding pho
 ```bash
 sudo pacman -Syyu flatpak --noconfirm
 flatpak install flathub org.ferdium.Ferdium -y
+
 ```
 
 ### Setup
@@ -168,10 +179,11 @@ flatpak install flathub org.ferdium.Ferdium -y
 3. Add service → **WhatsApp**
 4. Scan QR code
 5. (Optional) Add:
+* Telegram
+* Discord
+* Slack
 
-   * Telegram
-   * Discord
-   * Slack
+
 
 ---
 
@@ -181,6 +193,7 @@ flatpak install flathub org.ferdium.Ferdium -y
 
 ```bash
 echo "7" | sudo pacman -S steam --noconfirm
+
 ```
 
 ### Vulkan Driver (Intel iGPU - Recommended)
@@ -189,6 +202,7 @@ During installation, when prompted to choose a provider for `lib32-vulkan-driver
 
 ```text
 7) lib32-vulkan-intel
+
 ```
 
 ---
@@ -213,6 +227,7 @@ Set in Steam:
 
 ```bash
 SDL_AUDIODRIVER=pulse PULSE_LATENCY_MSEC=60 %command% -console -novid
+
 ```
 
 ---
@@ -222,10 +237,11 @@ SDL_AUDIODRIVER=pulse PULSE_LATENCY_MSEC=60 %command% -console -novid
 * `-novid` → skips intro
 * `-console` → enables developer console
 * Native Vulkan ensures:
+* Proper input scaling
+* Stable FPS
+* Matchmaking enabled
 
-  * Proper input scaling
-  * Stable FPS
-  * Matchmaking enabled
+
 
 ---
 
@@ -239,6 +255,7 @@ Open:
 
 ```bash
 nvim ~/.config/hypr/hyprland.conf
+
 ```
 
 ### Hyprland Rules (Append)
@@ -287,12 +304,14 @@ device {
     sensitivity = 0.20
     accel_profile = adaptative
 }
+
 ```
 
 ### Reload
 
 ```bash
 hyprctl reload
+
 ```
 
 ### Experimental
@@ -301,6 +320,48 @@ hyprctl reload
 nvim ~/.bashrc
 alias gpm="git push origin main"
 source ~/.bashrc
+
+```
+
+### Kitty Terminal Migration & Config
+
+To install Kitty and configure the session manager (`uwsm`) and `xdg-terminal-exec` to recognize it as the system-wide default CLI terminal:
+
+```bash
+# 1. Install Kitty terminal emulator
+sudo pacman -S --noconfirm kitty
+
+# 2. Set Kitty as the default terminal handler via xdg configurations
+echo "kitty.desktop" > ~/.config/xdg-terminals.list
+rm -rf ~/.config/xdg-terminals/
+
+# 3. Configure local font sizing profiles
+mkdir -p ~/.config/kitty/
+echo "font_size 13.0" >> ~/.config/kitty/kitty.conf
+
+# 4. Refresh Omarchy session manager hooks to load the changes
+# Hit key combination: SUPER + SHIFT + R
+# Then use: SUPER + Enter to launch Kitty natively
+
+```
+
+### Fix Kitty + Neovim `image.nvim` Bootstrap Error
+
+If Neovim fails to boot with a `module 'dkjson' not found` warning under Kitty, resolve the architecture path loop manually:
+
+```bash
+# 1. Clear failing local cache files
+rm -rf ~/.local/share/nvim/lazy-rocks/
+rm -rf ~/.local/share/nvim/lazy/luarocks.nvim/
+
+# 2. Deploy native system tools
+sudo pacman -S --noconfirm lua-dkjson imagemagick
+# Note: If file conflict occurs on dkjson.lua, run: sudo rm -f /usr/share/lua/5.5/dkjson.lua
+
+# 3. Symlink system packages into Neovim LuaJIT path
+mkdir -p ~/.local/share/nvim/lazy-rocks/image.nvim/share/lua/5.1/
+ln -s /usr/share/lua/5.5/dkjson.lua ~/.local/share/nvim/lazy-rocks/image.nvim/share/lua/5.1/dkjson.lua
+
 ```
 
 ---
