@@ -21,7 +21,7 @@ This configuration is optimized for:
 ### Install
 
 ```bash
-yay -S brave-bin
+yay -S brave-bin --noconfirm
 ````
 
 ### Setup
@@ -157,11 +157,8 @@ Ferdium is used to centralize messaging apps like **WhatsApp Web**, avoiding pho
 ### Install
 
 ```bash
-# Ensure system is synced and flatpak is installed
-sudo pacman -Syyu flatpak
-
-# Install Ferdium via Flathub
-flatpak install flathub org.ferdium.Ferdium
+sudo pacman -Syyu flatpak --noconfirm
+flatpak install flathub org.ferdium.Ferdium -y
 ```
 
 ### Setup
@@ -183,7 +180,7 @@ flatpak install flathub org.ferdium.Ferdium
 ### Install
 
 ```bash
-sudo pacman -S steam
+echo "7" | sudo pacman -S steam --noconfirm
 ```
 
 ### Vulkan Driver (Intel iGPU - Recommended)
