@@ -52,6 +52,7 @@ Follow the prompts (recommended: login via browser).
 ## 📦 Clone Repository
 
 ```bash
+cd ~/Projects
 git clone https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git
 cd omarchy-configs-laptop
 ```
