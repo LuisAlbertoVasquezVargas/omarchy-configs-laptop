@@ -1,3 +1,4 @@
+<!-- README.md-->
 
 # 🜲 Omarchy Laptop Config
 
@@ -299,7 +300,4 @@ hyprctl reload
 ---
 
 **Author:** Luis Vásquez
-
-```
-```
 
