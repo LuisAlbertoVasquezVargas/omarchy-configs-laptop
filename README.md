@@ -295,6 +295,14 @@ device {
 hyprctl reload
 ```
 
+### Experimental
+
+```bash
+nvim ~/.bashrc
+alias gpm="git push origin main"
+source ~/.bashrc
+```
+
 ---
 
 **Author:** Luis Vásquez
