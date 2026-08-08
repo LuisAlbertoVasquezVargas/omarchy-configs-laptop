@@ -1,4 +1,4 @@
-// .config/waybar/config.jsonc
+// ~/.config/waybar/config.jsonc
 
 {
   "reload_style_on_change": true,

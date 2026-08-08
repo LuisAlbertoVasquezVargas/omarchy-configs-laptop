@@ -1,3 +1,5 @@
+# ~/.config/ghostty/config
+
 # Dynamic theme colors
 config-file = ?"~/.config/omarchy/current/theme/ghostty.conf"
 
