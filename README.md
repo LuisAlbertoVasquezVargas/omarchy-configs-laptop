@@ -1,370 +1,229 @@
-<!-- README.md-->
+# Omarchy Laptop Config
 
-# 🜲 Omarchy Laptop Config
+Personal Omarchy configuration for a laptop focused on a single-panel Hyprland workflow, seven persistent workspaces, battery-aware Waybar modules, Ghostty defaults, Steam/Dota 2 window behavior, Intel Vulkan stability, Ferdium startup, and native Linux gaming. It intentionally mirrors `omarchy-configs`; only hardware-specific settings differ. The tracked files under `.config/` are the single source of truth for laptop configuration.
 
-Minimal Omarchy setup focused on **stability, gaming, and daily productivity** on a single-display laptop.
+## Target System
 
----
+- OS: Omarchy
+- WM: Hyprland
+- GPU: Intel integrated graphics
+- Internal display: `eDP-1`, 1920×1200 at 60 Hz
+- Optional external display: `HDMI-A-1`
+- Waybar includes battery capacity and power-state reporting
 
-## 🛠️ System Information
+## Ghostty Setup
 
-This configuration is optimized for:
-* **OS:** Omarchy 3.4.2 (Stable Branch)
-* **Kernel:** Linux 6.19.13-a1
-* **WM:** Hyprland 0.54.3
-* **Verification:** Run `omarchy-fetch` or `fastfetch` to confirm your local version. (omarchy-launch-about)
+1. Install Ghostty.
 
----
+   ```bash
+   omarchy install terminal ghostty
+   ```
 
-## 🌐 Brave Browser
+2. Make Ghostty the default terminal.
 
-### Install
+   ```bash
+   omarchy default terminal ghostty
+   ```
 
-```bash
-yay -S brave-bin --noconfirm
+The tracked Ghostty configuration changes the font size from `9` to `13` and disables font-size inheritance so every new window starts at size `13`.
 
-```
+## Setup Steps
 
-### Setup
+1. This repository assumes Omarchy is already installed.
 
-1. Open Brave
-2. Set as default browser
-3. Go to settings → search engine
-4. Set:
-* Normal: Google
-* Private: Google
+2. Install Brave.
 
+   ```bash
+   sudo -v
+   yay -S --noconfirm brave-bin
+   ```
 
-5. Enable dark theme (Settings → Appearance → Theme → Dark)
+   Open Brave, set it as the default browser, set Google as the normal and private search engine, select the dark theme, then connect Brave Sync from your phone with the desktop QR code.
 
----
+3. Install Ferdium.
 
-## 🔐 GitHub Authentication (CLI)
+   ```bash
+   sudo pacman -S --needed --noconfirm flatpak
+   flatpak install --noninteractive flathub org.ferdium.Ferdium
+   ```
 
-Authenticate with GitHub to enable repo cloning and management:
+   Open Ferdium, choose `Use without account`, add the messaging services you need, and scan the QR code for WhatsApp.
 
-```bash
-gh auth login
+4. Install Node.js and npm for the OpenAI Codex CLI.
 
-```
+   ```bash
+   sudo pacman -S --needed nodejs npm
+   ```
 
-Follow the prompts (recommended: login via browser).
+   Verify the installation.
 
----
+   ```bash
+   node -v
+   npm -v
+   ```
 
-## 📦 Clone Repository
+5. Install the OpenAI Codex CLI globally with npm.
 
-```bash
-cd ~/Projects
-git clone [https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git](https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git)
-cd omarchy-configs-laptop
+   ```bash
+   npm install -g @openai/codex
+   ```
 
-```
+   Verify the installation.
 
----
+   ```bash
+   codex --version
+   ```
 
-## 🧭 Core Components
+6. Authenticate GitHub CLI.
 
-Main tools used in this setup:
+   ```bash
+   gh auth login
+   ```
 
-* **Hyprland** → Wayland compositor
-* **Waybar** → status bar
-* **Alacritty** → terminal emulator (system default)
-* **Brave** → default browser
-* **Ferdium** → messaging hub (WhatsApp Web, etc.)
-* **Steam** → gaming platform
+   Use browser login when prompted.
 
----
+7. Add the Git push alias.
 
-## 🧰 Waybar
+   ```bash
+   echo 'alias gpm="git push origin main"' >> ~/.bashrc
+   source ~/.bashrc
+   ```
 
-Waybar is used as the main status bar.
+8. Clone this repository.
 
-### Config
+   ```bash
+   cd ~/Projects
+   git clone https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git
+   cd omarchy-configs-laptop
+   ```
 
-Open:
+9. Compare the repository configs with the current system configs.
 
-```bash
-nvim ~/.config/waybar/config.jsonc
+   ```bash
+   python scripts/compare_configs.py
+   ```
 
-```
+10. Apply the repository configs.
 
-### Manual Adjustments
+   ```bash
+   python scripts/apply_configs.py
+   ```
 
-Update or add the following modules inside your config:
+   The script previews creates/replacements first and only writes after you type `yes`. Replaced files are backed up under `~/.local/state/omarchy-configs/backups/`.
 
-```jsonc
-"clock": {
-  "format": "{:L%d %B %A %H:%M}",
-  "format-alt": "{:L%d %B %A %H:%M}",
-  "tooltip": false,
-  "on-click-right": "omarchy-launch-floating-terminal-with-presentation omarchy-tz-select"
-},
+11. Compare again to confirm the files now match.
 
-"battery": {
-  "format": "{capacity}% {icon}",
-  "format-discharging": "{capacity}% {icon}"
-}
+    ```bash
+    python scripts/compare_configs.py
+    ```
 
-```
+12. Reload the desktop.
 
-### Persistent Workspaces
+    ```bash
+    hyprctl reload
+    omarchy restart waybar
+    ```
 
-Ensure persistent workspaces:
+    Reopen Ghostty windows so font, padding, and keyboard changes are picked up. Reboot if you want to verify the full autostart flow from a clean login.
 
-```jsonc
-"persistent-workspaces": {
-  "1": [],
-  "2": [],
-  "3": [],
-  "4": [],
-  "5": [],
-  "6": [],
-  "7": []
-}
+13. Install the optional Ghost Pastel Omarchy theme.
 
-```
+    ```bash
+    omarchy-theme-install https://github.com/row-huh/omarchy-ghost-pastel-theme
+    ```
 
-### Reload
+    Theme page: `https://omarchytheme.com/themes/ghost-pastel/`
 
-```bash
-pkill waybar
-hyprctl dispatch exec waybar
+14. Install Steam.
 
-```
+    ```bash
+    sudo pacman -S --needed --noconfirm steam
+    ```
 
----
+15. Configure Dota 2.
 
-## 🔤 Alacritty (Terminal)
+    Use the native Linux build with Vulkan. Do not use Gamescope, Proton, Wine, or wrappers because they can break VAC verification and disable matchmaking.
 
-Current system default terminal (based on `~/.config/xdg-terminals.list`).
+    Steam launch options:
 
-### Config
+    ```bash
+    SDL_AUDIODRIVER=pulse PULSE_LATENCY_MSEC=60 %command% -console -novid
+    ```
 
-Open:
+16. Configure Left 4 Dead 2.
 
-```bash
-nvim ~/.config/alacritty/alacritty.toml
+    Force X11 to avoid broken input scaling under Wayland.
 
-```
+    Steam launch options:
 
-### Font Size
+    ```bash
+    SDL_VIDEODRIVER=x11 SDL_AUDIODRIVER=pulse %command% -console -novid
+    ```
 
-Locate or add:
+    If Waybar appears over the game, toggle real fullscreen with `SUPER + F`.
 
-```toml
-[font]
-size = 13.0
+17. Configure StarCraft: Remastered.
 
-```
+    Download the Battle.net Windows installer from `https://www.blizzard.com/download`, add it to Steam as a non-Steam game, force Proton Experimental, run the installer, log in to Battle.net, and install StarCraft: Remastered while keeping the Battle.net window visible.
 
----
+    Steam launch options:
 
-## 💬 Ferdium (WhatsApp + Messaging)
+    ```bash
+    PROTON_NO_ESYNC=1 PROTON_NO_FSYNC=1 %command%
+    ```
 
-Ferdium is used to centralize messaging apps like **WhatsApp Web**, avoiding phone dependency and browser tab clutter.
+## Experimental: Neovim Image Rendering
 
-### Install
+This experiment renders standalone images and inline Markdown images inside Neovim through Ghostty's graphics-protocol support. PDF documents remain external and open in Zathura. The Neovim configuration is intentionally not tracked yet because this workflow is still being evaluated.
 
-```bash
-sudo pacman -Syyu flatpak --noconfirm
-flatpak install flathub org.ferdium.Ferdium -y
+1. Confirm Ghostty is the default terminal and start Neovim from a fresh Ghostty window.
 
-```
+2. Install the image conversion and PDF preview dependencies.
 
-### Setup
+   ```bash
+   omarchy pkg add imagemagick zathura zathura-pdf-mupdf
+   ```
 
-1. Open Ferdium
-2. Choose **“Use without account”** when prompted
-3. Add service → **WhatsApp**
-4. Scan QR code
-5. (Optional) Add:
-* Telegram
-* Discord
-* Slack
+3. Enable the image module from LazyVim's existing `snacks.nvim` plugin by creating `~/.config/nvim/lua/plugins/image-rendering.lua`:
 
+   ```lua
+   return {
+     {
+       "folke/snacks.nvim",
+       opts = {
+         image = {},
+       },
+     },
+   }
+   ```
 
+4. Restart Neovim and run `:checkhealth snacks`. Ghostty and ImageMagick should pass the image checks when Neovim is running interactively inside Ghostty.
 
----
+5. Test a standalone PNG or JPEG, then open a Markdown document containing a relative image reference. Use Zathura for PDF previews rather than rendering PDFs inline.
 
-## 🎮 Steam
+Headless Neovim cannot complete the terminal graphics handshake, so its health check may incorrectly report that the graphics protocol is unavailable. Validate rendering in an interactive Ghostty window.
 
-### Install
+## Experimental: Codex Workspace Shortcut
 
-```bash
-echo "7" | sudo pacman -S steam --noconfirm
+These shortcuts open Codex and a terminal in the corresponding project workspace:
 
-```
+- `SUPER + HOME` uses workspace 2 and `~/Projects/MOVER-research-materials/`.
+- `SUPER + END` uses workspace 3 and `~/Projects/shopping-list-ui/`.
 
-### Vulkan Driver (Intel iGPU - Recommended)
-
-During installation, when prompted to choose a provider for `lib32-vulkan-driver`, select:
+Add the following lines to `~/.config/hypr/bindings.conf`. They are intentionally kept out of the tracked Hyprland configuration while they are being evaluated:
 
 ```text
-7) lib32-vulkan-intel
-
+bindd = SUPER, HOME, Codex + terminal (workspace 2), workspace, 2
+bind = SUPER, HOME, exec, [workspace 2 silent] uwsm-app -- xdg-terminal-exec bash -lc 'cd "$HOME/Projects/MOVER-research-materials/" && exec codex'
+bind = SUPER, HOME, exec, [workspace 2 silent] uwsm-app -- xdg-terminal-exec bash -lc 'cd "$HOME/Projects/MOVER-research-materials/" && exec bash'
+bindd = SUPER, END, Codex + terminal (workspace 3), workspace, 3
+bind = SUPER, END, exec, [workspace 3 silent] uwsm-app -- xdg-terminal-exec bash -lc 'cd "$HOME/Projects/shopping-list-ui/" && exec codex'
+bind = SUPER, END, exec, [workspace 3 silent] uwsm-app -- xdg-terminal-exec bash -lc 'cd "$HOME/Projects/shopping-list-ui/" && exec bash'
 ```
 
----
+## Laptop display presets
 
-## 🎯 Dota 2 (Native + Matchmaking Enabled)
-
-Dota 2 is configured to run **natively using Vulkan**.
-
-⚠️ Do NOT use:
-
-* Gamescope
-* Proton
-* Any wrapper
-
-These break **VAC matchmaking**.
-
----
-
-### Launch Options
-
-Set in Steam:
-
-```bash
-SDL_AUDIODRIVER=pulse PULSE_LATENCY_MSEC=60 %command% -console -novid
-
-```
-
----
-
-### Notes
-
-* `-novid` → skips intro
-* `-console` → enables developer console
-* Native Vulkan ensures:
-* Proper input scaling
-* Stable FPS
-* Matchmaking enabled
-
-
-
----
-
-## ⚙️ Hyprland (Base Behavior)
-
-Minimal assumptions, no forced layouts.
-
-### Config
-
-Open:
-
-```bash
-nvim ~/.config/hypr/hyprland.conf
-
-```
-
-### Hyprland Rules (Append)
-
-Add the following rules **at the end of your config file** (do not replace existing settings):
-
-```ini
-# =============================
-# Steam (ALL windows controlled)
-# =============================
-
-windowrule {
-    name = steam-all
-    match:class = ^steam.*$
-    workspace = 1
-    float = on
-    center = on
-}
-
-windowrule {
-    name = steam-title-fallback
-    match:class = ^steam$
-    match:title = ^(Steam|Updating|Working|Loading).*
-    workspace = 1
-    float = on
-    center = on
-}
-
-# =============================
-# Dota 2 (launched via Steam)
-# =============================
-
-windowrule {
-    name = dota2-main
-    match:class = ^(steam_app_570|dota2)$
-    workspace = 1
-    fullscreen = on
-    no_anim = on
-}
-
-# -----------------------------
-# Pointer configuration (example)
-# -----------------------------
-device {
-    name = logitech-g300s-optical-gaming-mouse
-    sensitivity = 0.20
-    accel_profile = adaptative
-}
-
-```
-
-### Reload
-
-```bash
-hyprctl reload
-
-```
-
-### Experimental
-
-```bash
-nvim ~/.bashrc
-alias gpm="git push origin main"
-source ~/.bashrc
-
-```
-
-### Kitty Terminal Migration & Config
-
-To install Kitty and configure the session manager (`uwsm`) and `xdg-terminal-exec` to recognize it as the system-wide default CLI terminal:
-
-```bash
-# 1. Install Kitty terminal emulator
-sudo pacman -S --noconfirm kitty
-
-# 2. Set Kitty as the default terminal handler via xdg configurations
-echo "kitty.desktop" > ~/.config/xdg-terminals.list
-rm -rf ~/.config/xdg-terminals/
-
-# 3. Configure local font sizing profiles
-mkdir -p ~/.config/kitty/
-echo "font_size 13.0" >> ~/.config/kitty/kitty.conf
-
-# 4. Refresh Omarchy session manager hooks to load the changes
-# Hit key combination: SUPER + SHIFT + R
-# Then use: SUPER + Enter to launch Kitty natively
-
-```
-
-### Fix Kitty + Neovim `image.nvim` Bootstrap Error
-
-If Neovim fails to boot with a `module 'dkjson' not found` warning under Kitty, resolve the architecture path loop manually:
-
-```bash
-# 1. Clear failing local cache files
-rm -rf ~/.local/share/nvim/lazy-rocks/
-rm -rf ~/.local/share/nvim/lazy/luarocks.nvim/
-
-# 2. Deploy native system tools
-sudo pacman -S --noconfirm lua-dkjson imagemagick
-# Note: If file conflict occurs on dkjson.lua, run: sudo rm -f /usr/share/lua/5.5/dkjson.lua
-
-# 3. Symlink system packages into Neovim LuaJIT path
-mkdir -p ~/.local/share/nvim/lazy-rocks/image.nvim/share/lua/5.1/
-ln -s /usr/share/lua/5.5/dkjson.lua ~/.local/share/nvim/lazy-rocks/image.nvim/share/lua/5.1/dkjson.lua
-
-```
-
----
-
-**Author:** Luis Vásquez
-
+The tracked monitor file defaults to the internal `eDP-1` panel. It also keeps
+disabled presets for classroom mirroring, the Sala 90 extended display, and a
+4K mirrored display. Confirm connector names with `hyprctl monitors` before
+enabling one preset, and enable only one layout at a time.
