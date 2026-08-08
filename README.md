@@ -180,9 +180,9 @@ The tracked Ghostty configuration changes the font size from `9` to `13` and dis
     PROTON_NO_ESYNC=1 PROTON_NO_FSYNC=1 %command%
     ```
 
-## Experimental: Neovim Image Rendering
+## Neovim Configuration
 
-This experiment renders standalone images and inline Markdown images inside Neovim through Ghostty's graphics-protocol support. PDF documents remain external and open in Zathura. The Neovim configuration is intentionally not tracked yet because this workflow is still being evaluated.
+The tracked Neovim overrides show hidden files in Neo-tree by default and render standalone images and inline Markdown images through Ghostty's graphics-protocol support. PDF documents remain external and open in Zathura.
 
 1. Confirm Ghostty is the default terminal and start Neovim from a fresh Ghostty window.
 
@@ -196,18 +196,7 @@ This experiment renders standalone images and inline Markdown images inside Neov
 
    The final command should print `org.pwmt.zathura.desktop`, confirming that PDFs open with Zathura by default.
 
-3. Enable the image module from LazyVim's existing `snacks.nvim` plugin by creating `~/.config/nvim/lua/plugins/image-rendering.lua`:
-
-   ```lua
-   return {
-     {
-       "folke/snacks.nvim",
-       opts = {
-         image = {},
-       },
-     },
-   }
-   ```
+3. Apply the repository configs to install the tracked Neo-tree and image-rendering overrides.
 
 4. Restart Neovim and run `:checkhealth snacks`. Ghostty and ImageMagick should pass the image checks when Neovim is running interactively inside Ghostty.
 
