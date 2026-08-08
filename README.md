@@ -196,7 +196,11 @@ This experiment renders standalone images and inline Markdown images inside Neov
 
    ```bash
    omarchy pkg add imagemagick zathura zathura-pdf-mupdf
+   xdg-mime default org.pwmt.zathura.desktop application/pdf
+   xdg-mime query default application/pdf
    ```
+
+   The final command should print `org.pwmt.zathura.desktop`, confirming that PDFs open with Zathura by default.
 
 3. Enable the image module from LazyVim's existing `snacks.nvim` plugin by creating `~/.config/nvim/lua/plugins/image-rendering.lua`:
 
