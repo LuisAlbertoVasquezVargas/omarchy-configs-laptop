@@ -1,6 +1,6 @@
 # Omarchy Laptop Config
 
-Personal Omarchy configuration for a laptop focused on a single-panel Hyprland workflow, seven persistent workspaces, battery-aware Waybar modules, Ghostty defaults, Steam/Dota 2 window behavior, Intel Vulkan stability, Ferdium startup, and native Linux gaming. It intentionally mirrors `omarchy-configs`; only hardware-specific settings differ. The tracked files under `.config/` are the single source of truth for laptop configuration.
+Personal Omarchy configuration for a laptop focused on a single-panel Hyprland workflow, seven persistent workspaces, battery-aware Waybar modules, Ghostty defaults, Steam/Dota 2 window behavior, Intel Vulkan stability, experimental Ferdium integration, and native Linux gaming. It intentionally mirrors `omarchy-configs`; only hardware-specific settings differ. The tracked files under `.config/` are the single source of truth for laptop configuration.
 
 ## Target System
 
@@ -29,7 +29,13 @@ The tracked Ghostty configuration changes the font size from `9` to `13` and dis
 
 ## Setup Steps
 
-1. This repository assumes Omarchy is already installed.
+1. Update Omarchy immediately after the initial installation and before continuing with any other setup steps. This update is mandatory because the installer may not include all required modules.
+
+   ```bash
+   omarchy update
+   ```
+
+   Let the update finish, reboot if prompted, and then continue with the remaining steps.
 
 2. Install Brave.
 
@@ -38,31 +44,39 @@ The tracked Ghostty configuration changes the font size from `9` to `13` and dis
    yay -S --noconfirm brave-bin
    ```
 
-   Open Brave, set it as the default browser, set Google as the normal and private search engine, select the dark theme, then connect Brave Sync from your phone with the desktop QR code.
+   After installation, configure Brave:
 
-3. Install Ferdium.
+   1. Open Brave.
+   2. Set Brave as the default browser.
+   3. Go to **Settings → Search engine** and set:
+
+      - Normal: Google
+      - Private: Google
+
+   4. Enable the dark theme under **Settings → Appearance → Theme → Dark**.
+   5. Open **Settings → Sync**, start a new Sync chain, choose **Phone/Tablet**, and scan the desktop QR code with Brave on your phone.
+   6. Open **Settings → System**, disable **Use graphics acceleration when available**, and relaunch Brave. GPU acceleration can cause issues during long Google Meet video conferences.
+
+3. ~~Install Ferdium.~~
+
+   - ~~`sudo pacman -S --needed --noconfirm flatpak`~~
+   - ~~`flatpak install --noninteractive flathub org.ferdium.Ferdium`~~
+
+   ~~Open Ferdium, choose `Use without account`, add the messaging services you need, and scan the QR code for WhatsApp.~~
+
+   This step is temporarily disabled while investigating whether Ferdium contributes to the GPU instability.
+
+4. Verify the Node.js environment provided by Omarchy through `mise`.
 
    ```bash
-   sudo pacman -S --needed --noconfirm flatpak
-   flatpak install --noninteractive flathub org.ferdium.Ferdium
-   ```
-
-   Open Ferdium, choose `Use without account`, add the messaging services you need, and scan the QR code for WhatsApp.
-
-4. Install Node.js and npm for the OpenAI Codex CLI.
-
-   ```bash
-   sudo pacman -S --needed nodejs npm
-   ```
-
-   Verify the installation.
-
-   ```bash
+   mise current
    node -v
    npm -v
    ```
 
-5. Install the OpenAI Codex CLI globally with npm.
+   Omarchy 3.8.4 already provisions and manages Node.js through `mise`. Do not install the Pacman `nodejs` and `npm` packages: they create a second, unused runtime under `/usr/bin` while the `mise` runtime remains first in `PATH`.
+
+5. Install the OpenAI Codex CLI globally with the `mise`-managed npm.
 
    ```bash
    npm install -g @openai/codex
@@ -82,12 +96,12 @@ The tracked Ghostty configuration changes the font size from `9` to `13` and dis
 
    Use browser login when prompted.
 
-7. Add the Git push alias.
+7. ~~Add the Git push alias.~~
 
-   ```bash
-   echo 'alias gpm="git push origin main"' >> ~/.bashrc
-   source ~/.bashrc
-   ```
+   - ~~`echo 'alias gpm="git push origin main"' >> ~/.bashrc`~~
+   - ~~`source ~/.bashrc`~~
+
+   This alias is currently unused because Git operations are being handled through Codex.
 
 8. Clone this repository.
 
