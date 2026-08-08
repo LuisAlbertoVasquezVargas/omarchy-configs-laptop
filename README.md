@@ -66,25 +66,19 @@ The tracked Ghostty configuration changes the font size from `9` to `13` and dis
 
    This step is temporarily disabled while investigating whether Ferdium contributes to the GPU instability.
 
-4. Verify the Node.js environment provided by Omarchy through `mise`.
+4. Install and activate the latest Node.js through `mise`, then update npm.
 
    ```bash
-   mise current
+   mise use --global node@latest
+   npm install -g npm@latest
+   ```
+
+5. Install the latest OpenAI Codex CLI and verify the environment.
+
+   ```bash
+   npm install -g @openai/codex@latest
    node -v
    npm -v
-   ```
-
-   Omarchy 3.8.4 already provisions and manages Node.js through `mise`. Do not install the Pacman `nodejs` and `npm` packages: they create a second, unused runtime under `/usr/bin` while the `mise` runtime remains first in `PATH`.
-
-5. Install the OpenAI Codex CLI globally with the `mise`-managed npm.
-
-   ```bash
-   npm install -g @openai/codex
-   ```
-
-   Verify the installation.
-
-   ```bash
    codex --version
    ```
 
