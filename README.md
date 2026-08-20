@@ -18,6 +18,20 @@ git clone https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git
 cd omarchy-configs-laptop
 ```
 
+## Ghost Pastel Theme
+
+Install and activate the Ghost Pastel community theme:
+
+```bash
+omarchy theme install https://github.com/row-huh/omarchy-ghost-pastel-theme
+```
+
+The theme is installed under `~/.config/omarchy/themes/ghost-pastel`. Switch back to it later with:
+
+```bash
+omarchy theme set "Ghost Pastel"
+```
+
 ## Brave
 
 ```bash
