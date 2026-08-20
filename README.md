@@ -45,7 +45,15 @@ omarchy default browser brave
 
 ## Slack
 
-> **TODO:** Choose between Ferdium and a Quattro web app. Disable GPU acceleration persistently before using Slack through Ferdium.
+Install Slack as an Omarchy web app:
+
+```bash
+omarchy-webapp-install "Slack" "https://app.slack.com/client" ""
+```
+
+The empty icon argument lets Omarchy download Slack's icon automatically. Open the app launcher with `Super + Space`, search for **Slack**, and sign in to the workspace. Allow notifications when Brave prompts for permission.
+
+Because Brave is the configured default browser, Slack opens in a standalone Brave web-app window.
 
 ## Zathura
 
