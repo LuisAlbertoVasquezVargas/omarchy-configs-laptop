@@ -41,7 +41,7 @@ omarchy default browser brave
 
 ## WhatsApp
 
-> **TODO:** Choose between Ferdium and Quattro's built-in WhatsApp web app.
+Nothing to install. WhatsApp comes preinstalled as an Omarchy web app.
 
 ## Slack
 
