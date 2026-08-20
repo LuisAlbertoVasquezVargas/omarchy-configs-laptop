@@ -6,7 +6,7 @@ Personal configuration for Omarchy Quattro.
 
 - Laptop: Lenovo IdeaPad Slim 3 15IRH10
 - CPU: 13th Gen Intel(R) Core(TM) i7-13620H
-- GPU: Intel Corporation Raptor Lake-P [UHD Graphics]
+- GPU: Integrated graphics
 
 <!-- TODO: Describe additional hardware components. -->
 
