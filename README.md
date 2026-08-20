@@ -67,6 +67,19 @@ Path: `~/.config/omarchy/shell.json`
 }
 ```
 
+## Battery Format
+
+Migrates the previous Waybar `{capacity}% {icon}` battery format to Omarchy Shell so the percentage remains visible beside the battery icon.
+
+Path: `~/.config/omarchy/shell.json`
+
+```json
+{
+  "id": "omarchy.power",
+  "showPercentage": true
+}
+```
+
 ## Compact Window Layout
 
 Path: `~/.config/hypr/looknfeel.lua`
