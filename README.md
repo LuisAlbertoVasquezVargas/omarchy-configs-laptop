@@ -40,6 +40,29 @@ omarchy pkg add zathura zathura-pdf-mupdf
 xdg-mime default org.pwmt.zathura.desktop application/pdf
 ```
 
+## Neovim
+
+Show hidden, filtered, and Git-ignored items in Neo-tree by default while keeping their filtered styling.
+
+Path: `~/.config/nvim/lua/plugins/neo-tree.lua`
+
+```lua
+return {
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    opts = {
+      filesystem = {
+        filtered_items = {
+          visible = true,
+        },
+      },
+    },
+  },
+}
+```
+
+Restart Neovim or reopen Neo-tree to apply the change.
+
 ## Steam
 
 ```bash
