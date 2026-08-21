@@ -35,6 +35,7 @@ Set Ghost Pastel's Hyprland-specific focused-border color in
 
 ```toml
 hyprland_active_border = "rgb(7c93dd)"
+hyprland_inactive_border = "rgb(070506)"
 ```
 
 Reapply the theme after changing its palette:
@@ -43,9 +44,11 @@ Reapply the theme after changing its palette:
 omarchy theme set "Ghost Pastel"
 ```
 
-Omarchy generates the active Hyprland border from
-`hyprland_active_border`. Themes that do not declare it fall back to their
-`accent`, so the window layout does not need to hardcode a theme color.
+Omarchy generates the focused and inactive Hyprland borders from
+`hyprland_active_border` and `hyprland_inactive_border`. For Ghost Pastel, the
+focused border uses its cyan palette color and the inactive border uses its
+background color rather than transparency, so the wallpaper does not show
+through. Themes that omit these fields use Omarchy's normal fallbacks.
 
 ## Brave
 
@@ -187,17 +190,12 @@ hl.config({
     gaps_in = 0,
     gaps_out = 0,
     border_size = 3,
-    col = {
-      -- The active border comes from the current Omarchy theme.
-      inactive_border = "rgba(00000000)",
-    },
   },
 })
 ```
 
-The transparent inactive border preserves the seamless appearance, while the
-focused window uses the active border supplied by the current theme. Switching
-themes therefore changes the focus color without editing `looknfeel.lua`.
+The current theme supplies both border colors. Switching themes therefore
+changes the focus and inactive colors without editing `looknfeel.lua`.
 
 ## Seven Workspaces
 

@@ -7,10 +7,6 @@ hl.config({
     gaps_in = 0,
     gaps_out = 0,
     border_size = 3,
-    col = {
-      -- The active border comes from the current Omarchy theme.
-      inactive_border = "rgba(00000000)",
-    },
   },
 })
 
