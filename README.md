@@ -30,25 +30,9 @@ The theme is installed under `~/.config/omarchy/themes/ghost-pastel`. Switch bac
 omarchy theme set "Ghost Pastel"
 ```
 
-Set Ghost Pastel's Hyprland-specific focused-border color in
-`~/.config/omarchy/themes/ghost-pastel/colors.toml`:
-
-```toml
-hyprland_active_border = "rgb(7c93dd)"
-hyprland_inactive_border = "rgb(070506)"
-```
-
-Reapply the theme after changing its palette:
-
-```bash
-omarchy theme set "Ghost Pastel"
-```
-
-Omarchy generates the focused and inactive Hyprland borders from
-`hyprland_active_border` and `hyprland_inactive_border`. For Ghost Pastel, the
-focused border uses its cyan palette color and the inactive border uses its
-background color rather than transparency, so the wallpaper does not show
-through. Themes that omit these fields use Omarchy's normal fallbacks.
+No Ghost Pastel-specific border override is required. The window configuration
+reads the currently applied theme's `colors.toml`: `color6` supplies the focused
+border and `background` supplies the inactive border.
 
 ## Brave
 
@@ -185,17 +169,17 @@ Path: `~/.config/omarchy/shell.json`
 Path: `~/.config/hypr/looknfeel.lua`
 
 ```lua
-hl.config({
-  general = {
-    gaps_in = 0,
-    gaps_out = 0,
-    border_size = 3,
-  },
-})
+local theme_colors = load_current_theme_colors()
+local active_border_color = to_hypr_color(theme_colors.color6 or theme_colors.accent)
+local inactive_border_color = to_hypr_color(theme_colors.background)
 ```
 
-The current theme supplies both border colors. Switching themes therefore
-changes the focus and inactive colors without editing `looknfeel.lua`.
+The tracked file defines `load_current_theme_colors()` and `to_hypr_color()`.
+They read Omarchy's current `colors.toml` and translate its hex values into
+Hyprland colors on every reload. Switching themes therefore changes both border
+colors without editing `looknfeel.lua` or any individual theme. If a theme does
+not expose these palette fields, the code leaves Omarchy's generated border
+colors unchanged rather than introducing a hardcoded fallback.
 
 ## Seven Workspaces
 
