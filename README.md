@@ -8,8 +8,6 @@ Personal configuration for Omarchy Quattro.
 - CPU: 13th Gen Intel(R) Core(TM) i7-13620H
 - GPU: Integrated graphics
 
-<!-- TODO: Describe additional hardware components. -->
-
 ## Clone This Repository
 
 ```bash
@@ -34,9 +32,40 @@ omarchy theme set "Ghost Pastel"
 
 ## Brave
 
+Install Brave:
+
 ```bash
 omarchy install browser brave
+```
+
+Then set Brave as the default browser:
+
+```bash
 omarchy default browser brave
+```
+
+### Setup
+
+1. Open Brave and set it as the default browser.
+2. Go to **Settings → Appearance → Theme** and select **Dark**.
+3. Go to **Settings → Sync** and select **I have a Sync Code**.
+4. On your smartphone:
+   1. Open Brave.
+   2. Go to **Settings → Sync**.
+   3. Select **Add a new device**.
+   4. Scan the QR code displayed on your laptop.
+5. Wait for synchronization to complete, including bookmarks, passwords, history, tabs, and other data.
+6. Go to **Settings → Search engine** and set:
+   - Normal: Google
+   - Private: Google
+7. Go to **Settings → System** and disable **Use graphics acceleration when available**.
+
+## Foot
+
+Foot is installed and configured as the default terminal on this laptop:
+
+```bash
+omarchy default terminal foot
 ```
 
 ## WhatsApp
@@ -48,12 +77,18 @@ Nothing to install. WhatsApp comes preinstalled as an Omarchy web app.
 Install Slack as an Omarchy web app:
 
 ```bash
-omarchy-webapp-install "Slack" "https://app.slack.com/client" ""
+omarchy webapp install "Slack" "https://app.slack.com/client" ""
 ```
 
 The empty icon argument lets Omarchy download Slack's icon automatically. Open the app launcher with `Super + Space`, search for **Slack**, and sign in to the workspace. Allow notifications when Brave prompts for permission.
 
 Because Brave is the configured default browser, Slack opens in a standalone Brave web-app window.
+
+## Discord
+
+Nothing to install. Discord comes preinstalled as an Omarchy web app. Open the app launcher with `Super + Space`, search for **Discord**, and sign in.
+
+Because Brave is the configured default browser, Discord opens in a standalone Brave web-app window.
 
 ## Zathura
 
@@ -270,9 +305,10 @@ local function codex_workspace(key, workspace, path)
   o.bind(key, nil, hl.dsp.exec_cmd(o.launch('xdg-terminal-exec --dir="' .. path .. '"'), rules))
 end
 
-codex_workspace("SUPER + Prior", "2", os.getenv("HOME") .. "/Projects/MOVER-research-materials") -- Page Up / Re Pág
 codex_workspace("SUPER + Next", "3", os.getenv("HOME") .. "/Projects/shopping-list-ui") -- Page Down / Av Pág
 ```
+
+Only configure shortcuts for project directories that exist. The former `SUPER + Prior` shortcut is omitted because `~/Projects/MOVER-research-materials` is no longer present on this laptop.
 
 ## Experimental: Intel GPU Driver Update
 
@@ -286,4 +322,4 @@ lspci -k -s 00:02.0
 
 ## Apply Configs
 
-> **TODO:** Adapt `scripts/apply_configs.py` for Omarchy Quattro.
+> **WARNING:** Do not run `scripts/apply_configs.py` on Omarchy Quattro yet. The repository still contains legacy Hyprland `.conf` files and a Waybar configuration that are incompatible with the current Lua-based Hyprland and Omarchy Shell setup.
