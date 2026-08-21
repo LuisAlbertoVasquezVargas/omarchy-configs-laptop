@@ -30,6 +30,23 @@ The theme is installed under `~/.config/omarchy/themes/ghost-pastel`. Switch bac
 omarchy theme set "Ghost Pastel"
 ```
 
+Set Ghost Pastel's Hyprland-specific focused-border color in
+`~/.config/omarchy/themes/ghost-pastel/colors.toml`:
+
+```toml
+hyprland_active_border = "rgb(7c93dd)"
+```
+
+Reapply the theme after changing its palette:
+
+```bash
+omarchy theme set "Ghost Pastel"
+```
+
+Omarchy generates the active Hyprland border from
+`hyprland_active_border`. Themes that do not declare it fall back to their
+`accent`, so the window layout does not need to hardcode a theme color.
+
 ## Brave
 
 Install Brave:
@@ -160,7 +177,7 @@ Path: `~/.config/omarchy/shell.json`
 }
 ```
 
-## Compact Window Layout
+## Compact Window Layout and Focus Border
 
 Path: `~/.config/hypr/looknfeel.lua`
 
@@ -169,10 +186,18 @@ hl.config({
   general = {
     gaps_in = 0,
     gaps_out = 0,
-    border_size = 0,
+    border_size = 3,
+    col = {
+      -- The active border comes from the current Omarchy theme.
+      inactive_border = "rgba(00000000)",
+    },
   },
 })
 ```
+
+The transparent inactive border preserves the seamless appearance, while the
+focused window uses the active border supplied by the current theme. Switching
+themes therefore changes the focus color without editing `looknfeel.lua`.
 
 ## Seven Workspaces
 
