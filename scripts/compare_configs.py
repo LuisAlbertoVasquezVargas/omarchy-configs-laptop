@@ -1,155 +1,76 @@
-# scripts/compare_configs.py
+#!/usr/bin/env python3
 
-import os
-import sys
-from difflib import unified_diff
-from filecmp import cmp
+import argparse
+import json
 from pathlib import Path
 
-MAX_DIFF_LINES = 40
-
-USE_COLOR = sys.stdout.isatty() and "NO_COLOR" not in os.environ
-
-RESET = "\033[0m"
-BOLD = "\033[1m"
-GREEN = "\033[32m"
-YELLOW = "\033[33m"
-RED = "\033[31m"
-CYAN = "\033[36m"
-MAGENTA = "\033[35m"
+from config_manager import (
+    ConfigError,
+    ERROR_STATUSES,
+    compare_configs,
+    comparison_diff,
+    load_specs,
+    repository_root,
+)
 
 
-def color(text: str, code: str) -> str:
-    if not USE_COLOR:
-        return text
-
-    return f"{code}{text}{RESET}"
-
-
-def label(name: str, code: str) -> str:
-    return color(f"[{name}]", code)
-
-
-def read_lines(path: Path) -> list[str] | None:
-    try:
-        return path.read_text(encoding="utf-8").splitlines(keepends=True)
-    except (UnicodeDecodeError, OSError):
-        return None
-
-
-def color_diff_line(line: str) -> str:
-    if line.startswith("+++") or line.startswith("---"):
-        return color(line, CYAN)
-
-    if line.startswith("+"):
-        return color(line, GREEN)
-
-    if line.startswith("-"):
-        return color(line, RED)
-
-    if line.startswith("@@"):
-        return color(line, MAGENTA)
-
-    return line
-
-
-def print_diff(
-    home_file: Path,
-    repo_file: Path,
-    relative_path: Path,
-) -> None:
-    home_lines = read_lines(home_file)
-    repo_lines = read_lines(repo_file)
-
-    if home_lines is None or repo_lines is None:
-        print("  Text diff unavailable for this file.")
-        return
-
-    diff_lines = list(
-        unified_diff(
-            home_lines,
-            repo_lines,
-            fromfile=f"system/.config/{relative_path}",
-            tofile=f"repo/.config/{relative_path}",
-            lineterm="",
-        )
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Compare managed repository configs with a home directory."
     )
-
-    for line in diff_lines[:MAX_DIFF_LINES]:
-        print(f"  {color_diff_line(line.rstrip())}")
-
-    omitted = len(diff_lines) - MAX_DIFF_LINES
-
-    if omitted > 0:
-        print(f"  ... {omitted} additional diff lines omitted")
+    parser.add_argument("--home", type=Path, default=Path.home(), help="Home directory to inspect")
+    parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+    parser.add_argument("--max-diff-lines", type=int, default=40)
+    return parser.parse_args()
 
 
-def print_report_group(
-    name: str,
-    code: str,
-    files: list[Path],
-) -> None:
-    print(f"{label(name, code)} {len(files)}")
+def main() -> int:
+    args = parse_args()
+    repo_root = repository_root()
 
-    for file in files:
-        print(f"  - {file}")
+    try:
+        specs = load_specs(repo_root)
+        comparisons = compare_configs(repo_root, args.home, specs)
+    except ConfigError as error:
+        print(f"error: {error}")
+        return 2
 
-
-def main() -> None:
-    repo_root = Path(__file__).resolve().parent.parent
-    repo_config = repo_root / ".config"
-    home_config = Path.home() / ".config"
-
-    if not repo_config.is_dir():
-        raise SystemExit(
-            f"Repository config directory not found: {repo_config}"
+    if args.json:
+        print(
+            json.dumps(
+                [
+                    {
+                        "path": str(comparison.spec.path),
+                        "status": comparison.status,
+                        "source": str(comparison.source),
+                        "target": str(comparison.target),
+                    }
+                    for comparison in comparisons
+                ],
+                indent=2,
+            )
         )
-
-    matches: list[Path] = []
-    mismatches: list[Path] = []
-    missing: list[Path] = []
-
-    print(color("Config comparison", BOLD))
-    print(f"Baseline:   {home_config}")
-    print(f"Repository: {repo_config}")
-    print()
-
-    for repo_file in sorted(repo_config.rglob("*")):
-        if repo_file.is_symlink() or not repo_file.is_file():
-            continue
-
-        relative_path = repo_file.relative_to(repo_config)
-        home_file = home_config / relative_path
-
-        if not home_file.exists():
-            print(f"{label('missing', RED)} {relative_path}")
-            print(f"  Not found at: {home_file}")
-            print()
-            missing.append(relative_path)
-            continue
-
-        if home_file.is_symlink() or not home_file.is_file():
-            continue
-
-        if cmp(repo_file, home_file, shallow=False):
-            print(f"{label('match', GREEN)} {relative_path}")
-            matches.append(relative_path)
-            continue
-
-        print(f"{label('mismatch', YELLOW)} {relative_path}")
-        print_diff(home_file, repo_file, relative_path)
+    else:
+        print(f"Repository: {repo_root / '.config'}")
+        print(f"System:     {args.home / '.config'}")
         print()
+        for comparison in comparisons:
+            print(f"[{comparison.status}] {comparison.spec.path}")
+            for line in comparison_diff(comparison, args.max_diff_lines):
+                print(f"  {line}")
+        print()
+        counts = {
+            status: sum(comparison.status == status for comparison in comparisons)
+            for status in ("match", "different", "missing", "wrong-type", "symlink-refused")
+        }
+        print("Summary: " + ", ".join(f"{status}={count}" for status, count in counts.items()))
 
-        mismatches.append(relative_path)
-
-    print()
-    print(color("Comparison report", BOLD))
-    print_report_group("match", GREEN, matches)
-    print()
-    print_report_group("mismatch", YELLOW, mismatches)
-    print()
-    print_report_group("missing", RED, missing)
+    if any(comparison.status in ERROR_STATUSES for comparison in comparisons):
+        return 2
+    if any(comparison.status != "match" for comparison in comparisons):
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

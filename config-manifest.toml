@@ -1,0 +1,46 @@
+version = 1
+
+[[files]]
+path = "hypr/hyprland.lua"
+validator = "lua"
+component = "hyprland"
+
+[[files]]
+path = "hypr/bindings.lua"
+validator = "lua"
+component = "hyprland"
+
+[[files]]
+path = "hypr/looknfeel.lua"
+validator = "lua"
+component = "hyprland"
+
+[[files]]
+path = "hypr/monitors.lua"
+validator = "lua"
+component = "hyprland"
+
+[[files]]
+path = "hypr/input.lua"
+validator = "lua"
+component = "hyprland"
+
+[[files]]
+path = "hypr/autostart.lua"
+validator = "lua"
+component = "hyprland"
+
+[[files]]
+path = "omarchy/shell.json"
+validator = "json"
+component = "shell"
+
+[[files]]
+path = "nvim/lua/plugins/neo-tree.lua"
+validator = "lua"
+component = "neovim"
+
+[[files]]
+path = "nvim/lua/plugins/image-rendering.lua"
+validator = "lua"
+component = "neovim"

@@ -1,218 +1,98 @@
-# scripts/apply_configs.py
+#!/usr/bin/env python3
 
-import os
-import sys
-from datetime import datetime
-from difflib import unified_diff
-from filecmp import cmp
+import argparse
 from pathlib import Path
-from shutil import copy2
 
-MAX_DIFF_LINES = 20
-
-USE_COLOR = sys.stdout.isatty() and "NO_COLOR" not in os.environ
-
-RESET = "\033[0m"
-BOLD = "\033[1m"
-GREEN = "\033[32m"
-YELLOW = "\033[33m"
-RED = "\033[31m"
-CYAN = "\033[36m"
-MAGENTA = "\033[35m"
+from config_manager import (
+    ConfigError,
+    ERROR_STATUSES,
+    compare_configs,
+    comparison_diff,
+    deploy,
+    load_specs,
+    repository_root,
+    rollback,
+)
 
 
-def color(text: str, code: str) -> str:
-    if not USE_COLOR:
-        return text
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Safely deploy the allowlisted Omarchy configs.")
+    action = parser.add_mutually_exclusive_group()
+    action.add_argument("--apply", action="store_true", help="Apply the previewed changes")
+    action.add_argument(
+        "--rollback",
+        metavar="TRANSACTION_ID",
+        help="Restore a previous deployment backup",
+    )
+    parser.add_argument("--home", type=Path, default=Path.home(), help="Home directory to update")
+    parser.add_argument(
+        "--skip-live-validation",
+        action="store_true",
+        help="Skip Hyprland reload/state checks (syntax validation still runs)",
+    )
+    parser.add_argument("--max-diff-lines", type=int, default=20)
+    return parser.parse_args()
 
-    return f"{code}{text}{RESET}"
 
+def main() -> int:
+    args = parse_args()
 
-def label(name: str, code: str) -> str:
-    return color(f"[{name}]", code)
+    if args.rollback:
+        try:
+            warnings = rollback(args.home, args.rollback, skip_live=args.skip_live_validation)
+        except ConfigError as error:
+            print(f"error: {error}")
+            return 2
+        print(f"Rolled back transaction {args.rollback}")
+        for warning in warnings:
+            print(f"warning: {warning}")
+        return 0
 
-
-def read_lines(path: Path) -> list[str] | None:
+    repo_root = repository_root()
     try:
-        return path.read_text(encoding="utf-8").splitlines(keepends=True)
-    except (UnicodeDecodeError, OSError):
-        return None
+        specs = load_specs(repo_root)
+        comparisons = compare_configs(repo_root, args.home, specs)
+    except ConfigError as error:
+        print(f"error: {error}")
+        return 2
 
+    print("Deployment preview")
+    print(f"Source: {repo_root / '.config'}")
+    print(f"Target: {args.home / '.config'}")
+    print()
+    for comparison in comparisons:
+        print(f"[{comparison.status}] {comparison.spec.path}")
+        for line in comparison_diff(comparison, args.max_diff_lines):
+            print(f"  {line}")
 
-def color_diff_line(line: str) -> str:
-    if line.startswith("+++") or line.startswith("---"):
-        return color(line, CYAN)
+    if any(comparison.status in ERROR_STATUSES for comparison in comparisons):
+        print("\nRefusing deployment because an unsafe target was found.")
+        return 2
 
-    if line.startswith("+"):
-        return color(line, GREEN)
+    if all(comparison.status == "match" for comparison in comparisons):
+        print("\nAll managed configs already match.")
+        return 0
 
-    if line.startswith("-"):
-        return color(line, RED)
+    if not args.apply:
+        print("\nDry run only. Re-run with --apply to deploy these changes.")
+        return 1
 
-    if line.startswith("@@"):
-        return color(line, MAGENTA)
-
-    return line
-
-
-def print_diff(
-    repo_file: Path,
-    system_file: Path,
-    relative_path: Path,
-) -> None:
-    repo_lines = read_lines(repo_file)
-    system_lines = read_lines(system_file)
-
-    if repo_lines is None or system_lines is None:
-        print("  Text diff unavailable for this file.")
-        return
-
-    diff_lines = list(
-        unified_diff(
-            system_lines,
-            repo_lines,
-            fromfile=f"system/.config/{relative_path}",
-            tofile=f"repo/.config/{relative_path}",
-            lineterm="",
+    try:
+        result = deploy(
+            repo_root,
+            args.home,
+            specs,
+            skip_live=args.skip_live_validation,
         )
-    )
+    except ConfigError as error:
+        print(f"error: {error}")
+        return 2
 
-    for line in diff_lines[:MAX_DIFF_LINES]:
-        print(f"  {color_diff_line(line.rstrip())}")
-
-    omitted = len(diff_lines) - MAX_DIFF_LINES
-
-    if omitted > 0:
-        print(f"  ... {omitted} additional diff lines omitted")
-
-
-def print_report_group(
-    name: str,
-    code: str,
-    files: list[Path],
-) -> None:
-    print(f"{label(name, code)} {len(files)}")
-
-    for file in files:
-        print(f"  - {file}")
-
-
-def confirm_apply() -> bool:
-    print()
-    response = input("Type 'yes' to apply these changes: ")
-    return response.strip().lower() == "yes"
-
-
-def main() -> None:
-    repo_root = Path(__file__).resolve().parent.parent
-    repo_config = repo_root / ".config"
-    system_config = Path.home() / ".config"
-
-    if not repo_config.is_dir():
-        raise SystemExit(
-            f"Repository config directory not found: {repo_config}"
-        )
-
-    matches: list[Path] = []
-    creations: list[tuple[Path, Path, Path]] = []
-    replacements: list[tuple[Path, Path, Path]] = []
-
-    print(color("Config deployment preview", BOLD))
-    print(f"Source: {repo_config}")
-    print(f"Target: {system_config}")
-    print()
-
-    for repo_file in sorted(repo_config.rglob("*")):
-        if repo_file.is_symlink() or not repo_file.is_file():
-            continue
-
-        relative_path = repo_file.relative_to(repo_config)
-        system_file = system_config / relative_path
-
-        if system_file.is_symlink():
-            raise SystemExit(
-                f"Refusing to replace symbolic link: {system_file}"
-            )
-
-        if not system_file.exists():
-            print(f"{label('create', CYAN)} {relative_path}")
-            creations.append((repo_file, system_file, relative_path))
-            continue
-
-        if not system_file.is_file():
-            raise SystemExit(
-                f"Refusing to replace non-regular path: {system_file}"
-            )
-
-        if cmp(repo_file, system_file, shallow=False):
-            print(f"{label('match', GREEN)} {relative_path}")
-            matches.append(relative_path)
-            continue
-
-        print(f"{label('replace', YELLOW)} {relative_path}")
-        print_diff(repo_file, system_file, relative_path)
-        print()
-
-        replacements.append((repo_file, system_file, relative_path))
-
-    print()
-    print(color("Deployment report", BOLD))
-    print_report_group("match", GREEN, matches)
-    print()
-    print_report_group(
-        "create",
-        CYAN,
-        [relative for _, _, relative in creations],
-    )
-    print()
-    print_report_group(
-        "replace",
-        YELLOW,
-        [relative for _, _, relative in replacements],
-    )
-
-    if not creations and not replacements:
-        return
-
-    if not confirm_apply():
-        print(color("Deployment cancelled.", RED))
-        return
-
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    backup_root = (
-        Path.home()
-        / ".local"
-        / "state"
-        / "omarchy-configs"
-        / "backups"
-        / timestamp
-        / ".config"
-    )
-
-    if replacements:
-        for _, system_file, relative_path in replacements:
-            backup_file = backup_root / relative_path
-            backup_file.parent.mkdir(parents=True, exist_ok=True)
-            copy2(system_file, backup_file)
-
-    for repo_file, system_file, relative_path in creations:
-        system_file.parent.mkdir(parents=True, exist_ok=True)
-        copy2(repo_file, system_file)
-        print(f"{label('created', CYAN)} {relative_path}")
-
-    for repo_file, system_file, relative_path in replacements:
-        system_file.parent.mkdir(parents=True, exist_ok=True)
-        copy2(repo_file, system_file)
-        print(f"{label('replaced', GREEN)} {relative_path}")
-
-    print()
-    print(color("Deployment complete", BOLD))
-    print(f"Created:  {len(creations)}")
-    print(f"Replaced: {len(replacements)}")
-
-    if replacements:
-        print(f"Backup:   {backup_root.parent}")
+    print(f"\nDeployment complete. Backup transaction: {result.transaction_id}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -1,0 +1,19 @@
+-- Keep only personal input overrides here. Uncommented settings replace
+-- Omarchy's defaults.
+
+-- Example keyboard, pointer, and touchpad overrides:
+-- hl.config({
+--   input = {
+--     kb_layout = "us",
+--     repeat_rate = 40,
+--     repeat_delay = 250,
+--     sensitivity = 0.35,
+--     accel_profile = "flat",
+--     touchpad = {
+--       natural_scroll = true,
+--       clickfinger_behavior = true,
+--       scroll_factor = 0.4,
+--       disable_while_typing = false,
+--     },
+--   },
+-- })

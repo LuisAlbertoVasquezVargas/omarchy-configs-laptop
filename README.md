@@ -8,6 +8,20 @@ Personal configuration for Omarchy Quattro.
 - CPU: 13th Gen Intel(R) Core(TM) i7-13620H
 - GPU: Integrated graphics
 
+## Managed Configuration
+
+This repository intentionally manages only the Quattro overrides listed in
+`config-manifest.toml`:
+
+- Hyprland bootstrap, workspace rules, bindings, look and feel, monitors,
+  input overrides, and autostart overrides
+- Omarchy Shell clock and battery presentation
+- Neovim Neo-tree and image-rendering overrides
+
+Legacy Hyprland `.conf`, Waybar, and unused terminal files are not managed or
+deployed. Every file under the repository's `.config` directory must have an
+explicit manifest entry, so adding an unlisted file causes the tools to stop.
+
 ## Clone This Repository
 
 ```bash
@@ -228,11 +242,17 @@ for workspace = 1, 7 do
     persistent = true,
   }
 
-  -- Every enabled monitor needs an active workspace. Keep the external
-  -- display on workspace 7 so Hyprland does not create workspace 8 for it.
-  if workspace == 7 and external_monitor then
-    rule.monitor = external_monitor
-    rule.default = true
+  if external_monitor then
+    if workspace == 7 then
+      rule.monitor = external_monitor
+      rule.default = true
+    else
+      rule.monitor = "eDP-1"
+
+      if workspace == 1 then
+        rule.default = true
+      end
+    end
   end
 
   hl.workspace_rule(rule)
@@ -350,4 +370,66 @@ lspci -k -s 00:02.0
 
 ## Apply Configs
 
-> **WARNING:** Do not run `scripts/apply_configs.py` on Omarchy Quattro yet. The repository still contains legacy Hyprland `.conf` files and a Waybar configuration that are incompatible with the current Lua-based Hyprland and Omarchy Shell setup.
+The deployment tools use `config-manifest.toml` as an allowlist. They never
+recursively deploy arbitrary files from `.config`.
+
+### Compare
+
+Compare the repository with the current home directory without changing
+anything:
+
+```bash
+python scripts/compare_configs.py
+```
+
+Use JSON output for automation:
+
+```bash
+python scripts/compare_configs.py --json
+```
+
+Exit status `0` means every managed file matches, `1` means configuration
+drift was found, and `2` means an unsafe target or configuration error was
+detected.
+
+### Preview and Apply
+
+`apply_configs.py` is a dry run unless `--apply` is passed:
+
+```bash
+python scripts/apply_configs.py
+python scripts/apply_configs.py --apply
+```
+
+Before writing, the script validates every JSON and Lua source file. It refuses
+symbolic links and non-regular targets, backs up replacements, writes files
+atomically, and validates the deployed files again. In an active Hyprland
+session it also reloads Hyprland, checks `configerrors`, verifies workspace IDs
+1-7, and confirms that workspace 8-10 bindings are absent. A failed validation
+automatically restores the backup.
+
+Backups are stored under:
+
+```text
+~/.local/state/omarchy-configs/backups/<transaction-id>/
+```
+
+### Roll Back
+
+Restore a deployment by using the transaction ID printed after a successful
+apply:
+
+```bash
+python scripts/apply_configs.py --rollback <transaction-id>
+```
+
+Rollback refuses to delete or overwrite a managed file if it has been edited
+since deployment.
+
+### Tests
+
+Run the isolated deployment tests without touching the live home directory:
+
+```bash
+python -m unittest discover -s tests -v
+```
