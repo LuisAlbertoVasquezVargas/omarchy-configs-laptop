@@ -103,6 +103,8 @@ xdg-mime default org.pwmt.zathura.desktop application/pdf
 
 ## Neovim
 
+### Neo-tree
+
 Show hidden, filtered, and Git-ignored items in Neo-tree by default while keeping their filtered styling.
 
 Path: `~/.config/nvim/lua/plugins/neo-tree.lua`
@@ -123,6 +125,25 @@ return {
 ```
 
 Restart Neovim or reopen Neo-tree to apply the change.
+
+### Image Rendering
+
+Enable Snacks image rendering so supported image files can be displayed inside Neovim.
+
+Path: `~/.config/nvim/lua/plugins/image-rendering.lua`
+
+```lua
+return {
+  {
+    "folke/snacks.nvim",
+    opts = {
+      image = {},
+    },
+  },
+}
+```
+
+Restart Neovim after creating the file.
 
 ## Steam
 
