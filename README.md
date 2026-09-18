@@ -74,12 +74,6 @@ omarchy default browser brave
    - Private: Google
 7. Go to **Settings → System** and disable **Use graphics acceleration when available**.
 
-## Foot
-
-Foot is installed and configured as the default terminal on this laptop:
-
-~~`omarchy default terminal foot`~~
-
 ## WhatsApp
 
 Nothing to install. WhatsApp comes preinstalled as an Omarchy web app.
@@ -274,24 +268,6 @@ hyprctl -j workspaces | jq \
 ```
 
 The workspace IDs should be exactly 1-10. The default numeric shortcuts for all ten workspaces should remain available.
-
-## Experimental: Codex Workspace Shortcut
-
-Path: `~/.config/hypr/bindings.lua`
-
-```lua
-local function codex_workspace(key, workspace, path)
-  local rules = { workspace = workspace .. " silent" }
-
-  o.bind(key, "Codex + terminal (workspace " .. workspace .. ")", hl.dsp.focus({ workspace = workspace }))
-  o.bind(key, nil, hl.dsp.exec_cmd(o.launch('xdg-terminal-exec --dir="' .. path .. '" codex -C "' .. path .. '"'), rules))
-  o.bind(key, nil, hl.dsp.exec_cmd(o.launch('xdg-terminal-exec --dir="' .. path .. '"'), rules))
-end
-
-codex_workspace("SUPER + Next", "3", os.getenv("HOME") .. "/Projects/shopping-list-ui") -- Page Down / Av Pág
-```
-
-Only configure shortcuts for project directories that exist. The former `SUPER + Prior` shortcut is omitted because `~/Projects/MOVER-research-materials` is no longer present on this laptop.
 
 ## Experimental: Intel GPU Driver Update
 
