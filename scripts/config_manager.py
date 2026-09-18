@@ -282,23 +282,8 @@ def validate_live_hyprland() -> None:
         )
     except (json.JSONDecodeError, KeyError, TypeError) as error:
         raise ConfigError(f"Cannot parse Hyprland workspaces: {error}") from error
-    if workspace_ids != list(range(1, 8)):
-        raise ConfigError(f"Expected workspaces 1-7, found {workspace_ids}")
-
-    binds_result = _run_hyprctl(["-j", "binds"])
-    if binds_result.returncode != 0:
-        raise ConfigError(binds_result.stderr.strip() or "Cannot inspect Hyprland bindings")
-    try:
-        binds = json.loads(binds_result.stdout)
-    except json.JSONDecodeError as error:
-        raise ConfigError(f"Cannot parse Hyprland bindings: {error}") from error
-    forbidden = [
-        bind.get("description")
-        for bind in binds
-        if re.search(r"workspace (8|9|10)$", bind.get("description") or "", re.IGNORECASE)
-    ]
-    if forbidden:
-        raise ConfigError(f"Workspace 8-10 bindings remain: {forbidden}")
+    if workspace_ids != list(range(1, 11)):
+        raise ConfigError(f"Expected workspaces 1-10, found {workspace_ids}")
 
 
 def validate_deployed_files(home: Path, specs: Iterable[FileSpec]) -> None:

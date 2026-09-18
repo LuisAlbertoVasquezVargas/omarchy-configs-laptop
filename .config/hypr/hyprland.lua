@@ -16,9 +16,9 @@ require("hypr.autostart")
 -- Toggle config flags dynamically.
 require("default.hypr.toggles")
 
--- Keep seven persistent workspaces. With an external display connected,
--- workspaces 1-6 stay on the laptop and workspace 7 belongs to the external
--- display. Explicit assignments prevent Hyprland from creating workspace 8.
+-- Keep ten persistent workspaces. With an external display connected,
+-- workspaces 1-6 and 8-10 stay on the laptop while workspace 7 belongs to
+-- the external display.
 local external_monitor
 
 for _, monitor in ipairs(hl.get_monitors()) do
@@ -28,7 +28,7 @@ for _, monitor in ipairs(hl.get_monitors()) do
   end
 end
 
-for workspace = 1, 7 do
+for workspace = 1, 10 do
   local rule = {
     workspace = tostring(workspace),
     persistent = true,
