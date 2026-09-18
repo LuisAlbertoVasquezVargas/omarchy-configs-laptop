@@ -78,9 +78,7 @@ omarchy default browser brave
 
 Foot is installed and configured as the default terminal on this laptop:
 
-```bash
-omarchy default terminal foot
-```
+~~`omarchy default terminal foot`~~
 
 ## WhatsApp
 
