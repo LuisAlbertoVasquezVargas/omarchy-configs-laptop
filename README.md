@@ -38,11 +38,7 @@ Install and activate the Ghost Pastel community theme:
 omarchy theme install https://github.com/row-huh/omarchy-ghost-pastel-theme
 ```
 
-The theme is installed under `~/.config/omarchy/themes/ghost-pastel`. Switch back to it later with:
-
-```bash
-omarchy theme set "Ghost Pastel"
-```
+The theme is installed under `~/.config/omarchy/themes/ghost-pastel`.
 
 No Ghost Pastel-specific border override is required. The window configuration
 reads the currently applied theme's `colors.toml`: `color6` supplies the focused
