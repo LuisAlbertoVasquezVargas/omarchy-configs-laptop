@@ -105,9 +105,8 @@ xdg-mime default org.pwmt.zathura.desktop application/pdf
 
 ## Touchpad Right Click
 
-Enable clickfinger behavior so clicking with two fingers produces a right click
-on the touchpad. In Hyprland, this is the `clickfinger_behavior` touchpad
-setting:
+Use the touchpad's lower-right click area for right-click. In Hyprland, this is
+controlled by the `clickfinger_behavior` touchpad setting:
 
 Path: `~/.config/hypr/input.lua`
 
@@ -115,7 +114,7 @@ Path: `~/.config/hypr/input.lua`
 hl.config({
   input = {
     touchpad = {
-      clickfinger_behavior = true,
+      clickfinger_behavior = false,
     },
   },
 })

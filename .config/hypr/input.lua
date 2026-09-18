@@ -1,11 +1,11 @@
 -- Keep only personal input overrides here. Uncommented settings replace
 -- Omarchy's defaults.
 
--- Use two-finger clicking for right-click on the touchpad.
+-- Use the touchpad's lower-right click area for right-click.
 hl.config({
   input = {
     touchpad = {
-      clickfinger_behavior = true,
+      clickfinger_behavior = false,
     },
   },
 })
