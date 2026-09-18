@@ -103,6 +103,24 @@ omarchy pkg add zathura zathura-pdf-mupdf
 xdg-mime default org.pwmt.zathura.desktop application/pdf
 ```
 
+## Touchpad Right Click
+
+Enable clickfinger behavior so clicking with two fingers produces a right click
+on the touchpad. In Hyprland, this is the `clickfinger_behavior` touchpad
+setting:
+
+Path: `~/.config/hypr/input.lua`
+
+```lua
+hl.config({
+  input = {
+    touchpad = {
+      clickfinger_behavior = true,
+    },
+  },
+})
+```
+
 ## Neovim
 
 ### Neo-tree
