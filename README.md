@@ -240,7 +240,7 @@ colors unchanged rather than introducing a hardcoded fallback.
 
 Configure Hyprland to keep workspaces 1-10 persistent, including when an external monitor is connected.
 
-With an external monitor connected, this configuration assigns workspace 7 to the external monitor and keeps the other workspaces on the laptop display. Omarchy's default shortcuts for workspaces 1-10 remain enabled.
+With an external monitor connected, this configuration assigns workspace 7 to the external monitor and keeps the other workspaces on the laptop display. With the lid closed, Omarchy's clamshell flag assigns all ten workspaces to the external display. Opening the lid restores the split. Omarchy's default shortcuts for workspaces 1-10 remain enabled.
 
 ### Create the persistent workspaces
 
@@ -248,9 +248,13 @@ Path: `~/.config/hypr/hyprland.lua`
 
 ```lua
 local external_monitor
+local state_home = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")
+local clamshell_flag = io.open(state_home .. "/omarchy/toggles/hypr/internal-monitor-clamshell.lua", "r")
+local clamshell = clamshell_flag ~= nil
+if clamshell_flag then clamshell_flag:close() end
 
 for _, monitor in ipairs(hl.get_monitors()) do
-  if monitor.name ~= "eDP-1" then
+  if monitor.name ~= "eDP-1" and not monitor.disabled then
     external_monitor = monitor.name
     break
   end
@@ -263,7 +267,10 @@ for workspace = 1, 10 do
   }
 
   if external_monitor then
-    if workspace == 7 then
+    if clamshell then
+      rule.monitor = external_monitor
+      rule.default = workspace == 1
+    elseif workspace == 7 then
       rule.monitor = external_monitor
       rule.default = true
     else
