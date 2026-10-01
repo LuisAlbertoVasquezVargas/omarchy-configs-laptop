@@ -44,3 +44,73 @@ component = "neovim"
 path = "nvim/lua/plugins/image-rendering.lua"
 validator = "lua"
 component = "neovim"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.power/Model.js"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.power/Panel.qml"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.power/manifest.json"
+validator = "json"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/Agent.qml"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/Main.qml"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/Panel.qml"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/README.md"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/assets/claude.svg"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/assets/codex-light.svg"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/assets/codex.svg"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/assets/fireworks.svg"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/manifest.json"
+validator = "json"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/usage-codex"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.agents/usage-update"
+validator = "plain"
+component = "shell"

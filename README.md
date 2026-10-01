@@ -15,7 +15,7 @@ This repository intentionally manages only the Quattro overrides listed in
 
 - Hyprland bootstrap, workspace rules, bindings, look and feel, monitors,
   input overrides, and autostart overrides
-- Omarchy Shell clock and battery presentation
+- Omarchy Shell clock and battery presentation, plus custom power and agents plugins
 - Neovim Neo-tree and image-rendering overrides
 
 Legacy Hyprland `.conf`, Waybar, and unused terminal files are not managed or
@@ -199,10 +199,25 @@ Path: `~/.config/omarchy/shell.json`
 
 ```json
 {
-  "id": "omarchy.power",
+  "id": "lvasquez.power",
   "showPercentage": true
 }
 ```
+
+### Battery Panel Refresh
+
+The managed `lvasquez.power` plugin is a user-owned clone of `omarchy.power`.
+Its open panel refreshes battery details, power profiles, and system stats every
+2 seconds (`interval: 2000` in
+`.config/omarchy/plugins/lvasquez.power/Panel.qml`). The bar percentage continues
+to update through UPower independently. The timer runs only while the panel is
+open, and saved plugin changes reload automatically in Omarchy Shell.
+
+## Agents Widget
+
+The managed `lvasquez.agents` plugin preserves the live agents widget and its
+local usage collectors, including the Codex RPC read timeout fix. Its source,
+assets, and executable collectors are included in the configuration manifest.
 
 ## Compact Window Layout and Focus Border
 

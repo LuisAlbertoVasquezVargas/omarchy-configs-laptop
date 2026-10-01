@@ -42,7 +42,7 @@
           "id": "omarchy.tray"
         },
         {
-          "id": "omarchy.agents"
+          "id": "lvasquez.agents"
         },
         {
           "id": "omarchy.bluetooth"
@@ -57,7 +57,7 @@
           "id": "omarchy.monitor"
         },
         {
-          "id": "omarchy.power",
+          "id": "lvasquez.power",
           "showPercentage": true
         }
       ]

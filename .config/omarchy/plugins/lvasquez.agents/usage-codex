@@ -1,0 +1,28 @@
+#!/usr/bin/python3
+"""Use raw pipe reads so buffered RPC replies cannot cause false timeouts."""
+import runpy, json, time, os, select
+
+def rpc(proc, request_id, method, params=None, timeout=8):
+    proc.stdin.write(json.dumps({'id':request_id,'method':method,'params':params or {}})+'\n')
+    proc.stdin.flush()
+    buf=getattr(proc, '_rpc_buffer', b'')
+    deadline=time.monotonic()+timeout
+    while True:
+        while b'\n' in buf:
+            line,buf=buf.split(b'\n',1)
+            proc._rpc_buffer=buf
+            try: msg=json.loads(line)
+            except (ValueError, UnicodeDecodeError): continue
+            if msg.get('id') == request_id: return msg
+        remaining=deadline-time.monotonic()
+        if remaining<=0: raise TimeoutError(method)
+        if not select.select([proc.stdout], [], [], remaining)[0]: raise TimeoutError(method)
+        chunk=os.read(proc.stdout.fileno(),65536)
+        if not chunk: raise RuntimeError('Codex app-server closed during '+method)
+        buf+=chunk
+        proc._rpc_buffer=buf
+
+if __name__ == '__main__':
+    collector = runpy.run_path('/usr/share/omarchy/bin/omarchy-agent-usage-codex')
+    collector['main'].__globals__['rpc_request'] = rpc
+    collector['main']()
