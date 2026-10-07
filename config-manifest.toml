@@ -114,3 +114,38 @@ component = "shell"
 path = "omarchy/plugins/lvasquez.agents/usage-update"
 validator = "plain"
 component = "shell"
+
+[[files]]
+path = "hypr/workspace-monitors.lua"
+validator = "lua"
+component = "hyprland"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.clock/BarWidget.qml"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.clock/Panel.qml"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.clock/Model.js"
+validator = "plain"
+component = "shell"
+
+[[files]]
+path = "omarchy/plugins/lvasquez.clock/manifest.json"
+validator = "json"
+component = "shell"
+
+[[files]]
+path = "systemd/user/omarchy-clock-refresh.service"
+validator = "plain"
+component = "systemd"
+
+[[files]]
+path = "systemd/user/omarchy-clock-refresh.timer"
+validator = "plain"
+component = "systemd"

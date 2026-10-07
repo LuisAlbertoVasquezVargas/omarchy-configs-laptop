@@ -22,7 +22,7 @@
           "id": "omarchy.indicators"
         },
         {
-          "id": "omarchy.clock",
+          "id": "lvasquez.clock",
           "format": "dd MMM ddd · 'W'ww · HH:mm",
           "formatAlt": "dd MMM ddd · 'W'ww · HH:mm",
           "verticalFormat": "HH\n—\nmm"

@@ -1,0 +1,13 @@
+[Unit]
+Description=Keep the Omarchy clock current across suspend and resume
+PartOf=graphical-session.target
+
+[Timer]
+OnCalendar=*-*-* *:*:00,30
+OnActiveSec=2
+AccuracySec=1s
+Persistent=true
+Unit=omarchy-clock-refresh.service
+
+[Install]
+WantedBy=graphical-session.target

@@ -15,7 +15,7 @@ This repository intentionally manages only the Quattro overrides listed in
 
 - Hyprland bootstrap, workspace rules, bindings, look and feel, monitors,
   input overrides, and autostart overrides
-- Omarchy Shell clock and battery presentation, plus custom power and agents plugins
+- Omarchy Shell clock and battery presentation, plus custom clock, power, and agents plugins and the clock refresh timer
 - Neovim Neo-tree and image-rendering overrides
 
 Legacy Hyprland `.conf`, Waybar, and unused terminal files are not managed or
@@ -184,7 +184,7 @@ Path: `~/.config/omarchy/shell.json`
 
 ```json
 {
-  "id": "omarchy.clock",
+  "id": "lvasquez.clock",
   "format": "dd MMM ddd · 'W'ww · HH:mm",
   "formatAlt": "dd MMM ddd · 'W'ww · HH:mm",
   "verticalFormat": "HH\n—\nmm"
@@ -236,77 +236,49 @@ colors without editing `looknfeel.lua` or any individual theme. If a theme does
 not expose these palette fields, the code leaves Omarchy's generated border
 colors unchanged rather than introducing a hardcoded fallback.
 
-## Ten Workspaces
+## Displays and Ten Workspaces
 
-Configure Hyprland to keep workspaces 1-10 persistent, including when an external monitor is connected.
+The laptop screen sits to the left of external monitors. Monitor rules match
+model and serial, so the Samsung's resolution is not applied to the BenQ.
 
-With an external monitor connected, this configuration assigns workspace 7 to the external monitor and keeps the other workspaces on the laptop display. With the lid closed, Omarchy's clamshell flag assigns all ten workspaces to the external display. Opening the lid restores the split. Omarchy's default shortcuts for workspaces 1-10 remain enabled.
+- BenQ G610HDAL (`A5B03247019`): 1366×768 at 59.79 Hz, scale 1.
+  With the lid open, workspaces 1–7 belong to the laptop and 8–10 to the BenQ.
+- Samsung LU28R55 (`HX5W200353`): 1920×1080 at 60 Hz, scale 1.
+  Other external monitors retain the earlier workspace-7 split.
+- With the internal screen disabled, all ten workspaces use the external screen.
+- With no external screen, all ten workspaces use the laptop.
 
-### Create the persistent workspaces
+`hypr/workspace-monitors.lua` handles monitor events and moves existing
+workspaces automatically. It is loaded by `hypr/hyprland.lua`.
 
-Path: `~/.config/hypr/hyprland.lua`
-
-```lua
-local external_monitor
-local state_home = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")
-local clamshell_flag = io.open(state_home .. "/omarchy/toggles/hypr/internal-monitor-clamshell.lua", "r")
-local clamshell = clamshell_flag ~= nil
-if clamshell_flag then clamshell_flag:close() end
-
-for _, monitor in ipairs(hl.get_monitors()) do
-  if monitor.name ~= "eDP-1" and not monitor.disabled then
-    external_monitor = monitor.name
-    break
-  end
-end
-
-for workspace = 1, 10 do
-  local rule = {
-    workspace = tostring(workspace),
-    persistent = true,
-  }
-
-  if external_monitor then
-    if clamshell then
-      rule.monitor = external_monitor
-      rule.default = workspace == 1
-    elseif workspace == 7 then
-      rule.monitor = external_monitor
-      rule.default = true
-    else
-      rule.monitor = "eDP-1"
-
-      if workspace == 1 then
-        rule.default = true
-      end
-    end
-  end
-
-  hl.workspace_rule(rule)
-end
-```
-
-When the external monitor is disconnected, Hyprland moves its workspaces and windows to the remaining display. Running `hyprctl reload` while undocked reevaluates the monitor detection and leaves workspaces 1-10 on the built-in display.
-
-If the laptop session starts undocked and an external monitor is connected later, run `hyprctl reload` so workspace 7 is assigned to it.
-
-### Reload and validate Hyprland
+After deployment, verify with:
 
 ```bash
 hyprctl reload
 hyprctl configerrors
+hyprctl -j workspaces | jq 'sort_by(.id) | map({id, monitor, windows})'
 ```
 
-`hyprctl configerrors` should return no output.
+## Clock Refresh Safeguard
 
-### Verify the result
+The local `lvasquez.clock` plugin supports an explicit refresh and a diagnostic
+status call. A user systemd timer requests a refresh every 30 seconds, independently
+of the shell's QML timers, to correct stale clock displays after resume. This is
+a workaround; it does not block suspend or restart the shell periodically.
+
+After applying the repository on a fresh installation, run these commands from
+an unlocked graphical session to load the plugins and enable the timer:
 
 ```bash
-hyprctl -j workspaces | jq \
-  'sort_by(.id) | map({id, monitor, windows})'
+systemctl --user daemon-reload
+omarchy restart shell
+systemctl --user enable --now omarchy-clock-refresh.timer
+omarchy-shell omarchy.clock status
+systemctl --user list-timers omarchy-clock-refresh.timer
 ```
 
-The workspace IDs should be exactly 1-10. The default numeric shortcuts for all ten workspaces should remain available.
+The deployment script copies the service and timer files but does not enable
+systemd units automatically. No Stay Awake sleep-blocking service is included.
 
 ## Experimental: Intel GPU Driver Update
 
