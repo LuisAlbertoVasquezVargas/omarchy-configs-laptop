@@ -72,7 +72,7 @@ omarchy default browser brave
 6. Go to **Settings → Search engine** and set:
    - Normal: Google
    - Private: Google
-7. Go to **Settings → System** and disable **Use graphics acceleration when available**.
+7. ~~Go to **Settings → System** and disable **Use graphics acceleration when available**.~~
 
 ## WhatsApp
 
