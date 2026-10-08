@@ -1,8 +1,0 @@
-[Unit]
-Description=Refresh the Omarchy clock independently of QML timers
-PartOf=graphical-session.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/timeout 8 /usr/bin/omarchy-shell omarchy.clock refresh
-TimeoutStartSec=10

@@ -8,19 +8,17 @@ Personal configuration for Omarchy Quattro.
 - CPU: 13th Gen Intel(R) Core(TM) i7-13620H
 - GPU: Integrated graphics
 
-## Managed Configuration
+## Configuration workflow
 
-This repository intentionally manages only the Quattro overrides listed in
-`config-manifest.toml`:
+`README.md` is the setup specification for Omarchy Quattro. Agents apply its
+instructions directly to the laptop's user configuration, preserving unrelated
+settings. The former comparison/deployment scripts, manifest, and duplicate
+`.config` snapshot have been retired; Git history retains them.
 
-- Hyprland bootstrap, workspace rules, bindings, look and feel, monitors,
-  input overrides, and autostart overrides
-- Omarchy Shell clock and battery presentation, plus custom clock, power, and agents plugins and the clock refresh timer
-- Neovim Neo-tree and image-rendering overrides
-
-Legacy Hyprland `.conf`, Waybar, and unused terminal files are not managed or
-deployed. Every file under the repository's `.config` directory must have an
-explicit manifest entry, so adding an unlisted file causes the tools to stop.
+Custom plugins and workspace logic live in `assets/` because their complete
+implementations are needed to reproduce the setup. Installation steps below
+identify their destinations. These are source assets, not a home-directory
+snapshot.
 
 ## Clone This Repository
 
@@ -209,7 +207,7 @@ Path: `~/.config/omarchy/shell.json`
 The managed `lvasquez.power` plugin is a user-owned clone of `omarchy.power`.
 Its open panel refreshes battery details, power profiles, and system stats every
 2 seconds (`interval: 2000` in
-`.config/omarchy/plugins/lvasquez.power/Panel.qml`). The bar percentage continues
+`assets/plugins/lvasquez.power/Panel.qml`). The bar percentage continues
 to update through UPower independently. The timer runs only while the panel is
 open, and saved plugin changes reload automatically in Omarchy Shell.
 
@@ -217,24 +215,87 @@ open, and saved plugin changes reload automatically in Omarchy Shell.
 
 The managed `lvasquez.agents` plugin preserves the live agents widget and its
 local usage collectors, including the Codex RPC read timeout fix. Its source,
-assets, and executable collectors are included in the configuration manifest.
+assets, and executable collectors are preserved in `assets/plugins/lvasquez.agents/`.
+Install this directory using the plugin instructions below.
 
 ## Compact Window Layout and Focus Border
 
 Path: `~/.config/hypr/looknfeel.lua`
 
 ```lua
+-- Change the default Omarchy look'n'feel.
+
+local function load_current_theme_colors()
+  local colors = {}
+  local home = os.getenv("HOME")
+
+  if not home then
+    return colors
+  end
+
+  local file = io.open(home .. "/.local/state/omarchy/current/theme/colors.toml", "r")
+
+  if not file then
+    return colors
+  end
+
+  for line in file:lines() do
+    local name, value = line:match('^%s*([%w_]+)%s*=%s*"([^"]+)"')
+
+    if name then
+      colors[name] = value
+    end
+  end
+
+  file:close()
+  return colors
+end
+
+local function to_hypr_color(value)
+  if not value then
+    return nil
+  end
+
+  local hex = value:match("^#(%x+)$")
+
+  if hex and #hex == 6 then
+    return "rgb(" .. hex .. ")"
+  elseif hex and #hex == 8 then
+    return "rgba(" .. hex .. ")"
+  end
+
+  return value
+end
+
 local theme_colors = load_current_theme_colors()
 local active_border_color = to_hypr_color(theme_colors.color6 or theme_colors.accent)
 local inactive_border_color = to_hypr_color(theme_colors.background)
+local general = {
+  gaps_in = 0,
+  gaps_out = 0,
+  border_size = 3,
+}
+local config = { general = general }
+
+if active_border_color and inactive_border_color then
+  general.col = {
+    active_border = active_border_color,
+    inactive_border = inactive_border_color,
+  }
+
+  config.group = {
+    col = {
+      border_active = active_border_color,
+      border_inactive = inactive_border_color,
+    },
+  }
+end
+
+-- https://wiki.hypr.land/Configuring/Basics/Variables/#general
+hl.config(config)
 ```
 
-The tracked file defines `load_current_theme_colors()` and `to_hypr_color()`.
-They read Omarchy's current `colors.toml` and translate its hex values into
-Hyprland colors on every reload. Switching themes therefore changes both border
-colors without editing `looknfeel.lua` or any individual theme. If a theme does
-not expose these palette fields, the code leaves Omarchy's generated border
-colors unchanged rather than introducing a hardcoded fallback.
+The code reads the current theme palette on each reload.
 
 ## Displays and Ten Workspaces
 
@@ -248,10 +309,39 @@ model and serial, so the Samsung's resolution is not applied to the BenQ.
 - With the internal screen disabled, all ten workspaces use the external screen.
 - With no external screen, all ten workspaces use the laptop.
 
-`hypr/workspace-monitors.lua` handles monitor events and moves existing
-workspaces automatically. It is loaded by `hypr/hyprland.lua`.
+Set the monitor rules in `~/.config/hypr/monitors.lua`:
 
-After deployment, verify with:
+```lua
+-- See https://wiki.hypr.land/Configuring/Basics/Monitors/
+-- List current monitors and supported resolutions with: hyprctl monitors all
+
+local omarchy_gdk_scale = 2
+local omarchy_monitor_scale = "auto"
+
+hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = omarchy_monitor_scale })
+
+-- Samsung external display: 1080p at 60 Hz.
+hl.monitor({ output = "desc:Samsung Electric Company LU28R55 HX5W200353", mode = "1920x1080@60", position = "0x0", scale = 1 })
+
+-- BenQ G610HDAL: preferred panel resolution, without scaling.
+hl.monitor({ output = "desc:BNQ BenQ G610HDAL A5B03247019", mode = "1366x768@59.79", position = "0x0", scale = 1 })
+
+-- Place the laptop to the left of external displays.
+hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto-left", scale = omarchy_monitor_scale })
+```
+
+Copy `assets/hypr/workspace-monitors.lua` to
+`~/.config/hypr/workspace-monitors.lua`. Add this once to
+`~/.config/hypr/hyprland.lua`, after the default and personal config imports:
+
+```lua
+require("hypr.workspace-monitors")
+```
+
+The module handles monitor events and moves existing workspaces automatically.
+
+After applying these settings, verify with:
 
 ```bash
 hyprctl reload
@@ -266,6 +356,37 @@ status call. A user systemd timer requests a refresh every 30 seconds, independe
 of the shell's QML timers, to correct stale clock displays after resume. This is
 a workaround; it does not block suspend or restart the shell periodically.
 
+Create `~/.config/systemd/user/omarchy-clock-refresh.service` with:
+
+```ini
+[Unit]
+Description=Refresh the Omarchy clock independently of QML timers
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/timeout 8 /usr/bin/omarchy-shell omarchy.clock refresh
+TimeoutStartSec=10
+```
+
+Create `~/.config/systemd/user/omarchy-clock-refresh.timer` with:
+
+```ini
+[Unit]
+Description=Keep the Omarchy clock current across suspend and resume
+PartOf=graphical-session.target
+
+[Timer]
+OnCalendar=*-*-* *:*:00,30
+OnActiveSec=2
+AccuracySec=1s
+Persistent=true
+Unit=omarchy-clock-refresh.service
+
+[Install]
+WantedBy=graphical-session.target
+```
+
 After applying the repository on a fresh installation, run these commands from
 an unlocked graphical session to load the plugins and enable the timer:
 
@@ -277,8 +398,7 @@ omarchy-shell omarchy.clock status
 systemctl --user list-timers omarchy-clock-refresh.timer
 ```
 
-The deployment script copies the service and timer files but does not enable
-systemd units automatically. No Stay Awake sleep-blocking service is included.
+No Stay Awake sleep-blocking service is included.
 
 ## Experimental: Intel GPU Driver Update
 
@@ -290,68 +410,39 @@ omarchy system reboot
 lspci -k -s 00:02.0
 ```
 
-## Apply Configs
+## Apply Configs with an Agent
 
-The deployment tools use `config-manifest.toml` as an allowlist. They never
-recursively deploy arbitrary files from `.config`.
+Follow the sections above rather than copying an entire configuration tree.
+Before changing each destination, back up its existing contents and inspect
+its current settings. Merge the documented overrides while retaining unrelated
+user settings and Omarchy's default imports. Skip settings already applied.
 
-### Compare
+### Custom plugin installation
 
-Compare the repository with the current home directory without changing
-anything:
+Copy each directory in `assets/plugins/` to the matching directory under
+`~/.config/omarchy/plugins/`, preserving executable permissions on `usage-codex`
+and `usage-update`. Back up any existing destination first. These user-owned
+plugins preserve the custom clock refresh, power panel polling, and agent usage
+collector behavior; do not modify packaged plugins under `/usr/share/omarchy/`.
 
-```bash
-python scripts/compare_configs.py
-```
+In `~/.config/omarchy/shell.json`, merge the clock and battery settings shown
+above into the existing bar entries, replacing `omarchy.clock` with
+`lvasquez.clock` and `omarchy.power` with `lvasquez.power`. Replace
+`omarchy.agents` with `lvasquez.agents` in the existing agents entry. If no agents
+entry exists, insert `{ "id": "lvasquez.agents" }` in `bar.layout.right` after
+the tray entry. Preserve other bar entries and shell settings.
 
-Use JSON output for automation:
+### Verification and recovery
 
-```bash
-python scripts/compare_configs.py --json
-```
+Validate edited Lua files with `luac -p` and JSON files with
+`python -m json.tool` before applying. Reload Hyprland and check
+`hyprctl configerrors`; confirm workspaces 1–10 and their monitor assignments.
+Restart Omarchy Shell after installing the plugins, then enable and verify the
+clock timer using the commands in **Clock Refresh Safeguard**. Verify the clock,
+battery panel, and agents widget in the running shell. Restart Neovim to load
+its plugin overrides.
 
-Exit status `0` means every managed file matches, `1` means configuration
-drift was found, and `2` means an unsafe target or configuration error was
-detected.
-
-### Preview and Apply
-
-`apply_configs.py` is a dry run unless `--apply` is passed:
-
-```bash
-python scripts/apply_configs.py
-python scripts/apply_configs.py --apply
-```
-
-Before writing, the script validates every JSON and Lua source file. It refuses
-symbolic links and non-regular targets, backs up replacements, writes files
-atomically, and validates the deployed files again. In an active Hyprland
-session it also reloads Hyprland, checks `configerrors`, and verifies workspace IDs
-1-10. A failed validation
-automatically restores the backup.
-
-Backups are stored under:
-
-```text
-~/.local/state/omarchy-configs/backups/<transaction-id>/
-```
-
-### Roll Back
-
-Restore a deployment by using the transaction ID printed after a successful
-apply:
-
-```bash
-python scripts/apply_configs.py --rollback <transaction-id>
-```
-
-Rollback refuses to delete or overwrite a managed file if it has been edited
-since deployment.
-
-### Tests
-
-Run the isolated deployment tests without touching the live home directory:
-
-```bash
-python -m unittest discover -s tests -v
-```
+If a change fails validation, restore the affected files from the backups and
+reload the affected component. Report what was applied and any remaining work.
+The experimental GPU update and reboot are a separate optional operation;
+perform them only when the user asks for that update.

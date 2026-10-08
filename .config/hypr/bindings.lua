@@ -1,1 +1,0 @@
--- Keep only personal keybinding overrides here. Omarchy defaults load first.

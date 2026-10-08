@@ -1,2 +1,0 @@
--- Extra startup processes belong here.
--- o.launch_on_start("my-service")
