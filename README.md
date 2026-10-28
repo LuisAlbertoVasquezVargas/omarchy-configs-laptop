@@ -162,6 +162,37 @@ return {
 
 Restart Neovim after creating the file.
 
+## Codex CLI Approval Defaults
+
+Make **Approve for me** the default for new Codex CLI sessions.
+
+Path: `~/.codex/config.toml`
+
+Back up the existing file, then merge these settings at the top level, before
+any TOML table headers. Preserve all unrelated settings.
+
+```toml
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+sandbox_mode = "workspace-write"
+```
+
+Eligible approval requests go through automatic review. The workspace sandbox
+remains enabled. These defaults apply to new sessions; existing sessions retain
+their settings. Start a new session and use `/permissions` to check the active
+permission mode.
+
+This machine was updated on 2026-10-28. Only the three settings above and a
+separating blank line were added; other settings were preserved. The backup is
+`/home/lvasquez/.codex/config.toml.backup-20261028-105614-016444`.
+
+Verification completed with `codex-cli 0.164.0`: the TOML parsed successfully,
+and `codex features list` loaded the updated configuration successfully.
+`codex --strict-config features list` is unsupported in this version.
+
+Official references: [Sandbox](https://learn.chatgpt.com/docs/sandboxing) and
+[Configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference).
+
 ## Steam
 
 ```bash
