@@ -56,11 +56,9 @@ function chargeThresholdActive(device, onBattery, states) {
 
   var fraction = batteryFraction(d)
   if (d.state === s.Discharging) return false
-  if (d.state === s.PendingCharge) return true
-  if (d.state === s.FullyCharged && fraction < 0.99) return true
-  if (d.state !== s.Charging || fraction >= 0.99) return false
-
-  return Number(d.changeRate || 0) <= 0.2 || Number(d.timeToFull || 0) >= 8 * 60 * 60
+  // Rate and time estimates lag plug-in and can fluctuate while charging.
+  // Neither a zero rate nor a long estimate proves a charge limit is active.
+  return d.state === s.PendingCharge || (d.state === s.FullyCharged && fraction < 0.99)
 }
 
 function batteryIcon(device, onBattery, states) {

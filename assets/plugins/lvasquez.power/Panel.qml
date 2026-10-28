@@ -183,6 +183,23 @@ Panel {
     function hide() { root.close() }
     function toggle() { root.toggle() }
     function togglePercentage() { root.togglePercentage() }
+    function status(): string {
+      var device = UPower.displayDevice
+      return JSON.stringify({
+        timestamp: Date.now(),
+        onBattery: UPower.onBattery,
+        state: device ? device.state : null,
+        rate: device ? device.changeRate : null,
+        timeToFull: device ? device.timeToFull : null,
+        threshold: root.chargeThresholdActive,
+        icon: root.batteryIcon(),
+        buttonText: button.text,
+        zeroRateIsThreshold: Model.chargeThresholdActive({
+          isPresent: true, percentage: 0.6,
+          state: UPowerDeviceState.Charging, changeRate: 0, timeToFull: 0
+        }, false, root.upowerStates())
+      })
+    }
   }
 
   onOpenedChanged: {

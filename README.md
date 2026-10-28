@@ -240,7 +240,34 @@ Its open panel refreshes battery details, power profiles, and system stats every
 2 seconds (`interval: 2000` in
 `assets/plugins/lvasquez.power/Panel.qml`). The bar percentage continues
 to update through UPower independently. The timer runs only while the panel is
-open, and saved plugin changes reload automatically in Omarchy Shell.
+open.
+
+The charging icon follows UPower's AC/battery state without waiting for its
+charging-rate or time-to-full estimates. Those estimates can lag plug-in by
+about 10 seconds or fluctuate during charging. The custom `Model.js` uses
+UPower's `PendingCharge` state, or `FullyCharged` below 99%, to recognize a
+charge hold; it does not infer a hold from a zero rate or a long estimate.
+
+After updating the power plugin's code, restart Omarchy Shell. On this machine,
+the plugin change log and `rescanPlugins` reported reloads while the running
+widget retained its previous code. Verify the active widget directly:
+
+```bash
+omarchy restart shell
+omarchy-shell omarchy.power status
+```
+
+The status reports the current UPower state, charge-limit decision, icon, and
+bar button text. `zeroRateIsThreshold: false` confirms that the loaded model
+does not mistake a temporary zero charging rate for a charge hold.
+
+After installing the plugin, unplug the charger, wait five seconds, and plug
+it back in. Confirm that the bar's charging icon appears promptly and stays
+visible while charging, including with the battery panel closed. Run the model
+regression checks with `node --test assets/plugins/lvasquez.power/Model.test.js`.
+Live verification on 2026-10-28, after restarting the shell, showed the bar
+switching to the charging icon about 0.34 seconds after the kernel reported AC
+online, even while UPower's charging rate was still zero.
 
 ## Agents Widget
 
