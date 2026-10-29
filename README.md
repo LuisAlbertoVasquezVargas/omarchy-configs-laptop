@@ -20,6 +20,11 @@ implementations are needed to reproduce the setup. Installation steps below
 identify their destinations. These are source assets, not a home-directory
 snapshot.
 
+On a fresh or reinstalled system, check each applicable section against the
+current machine. Completion on a previous installation is historical context.
+Skip steps whose checks already pass and apply missing prerequisites. Application
+sign-ins and personal account synchronization remain manual steps.
+
 ## Clone This Repository
 
 ```bash
@@ -96,10 +101,110 @@ Because Brave is the configured default browser, Discord opens in a standalone B
 
 ## Zathura
 
+Install the reader, its PDF backend, and the XDG association tools. `omarchy pkg
+add` skips packages that are already installed.
+
 ```bash
-omarchy pkg add zathura zathura-pdf-mupdf
+omarchy pkg add zathura zathura-pdf-mupdf xdg-utils
+```
+
+Run the association commands as the logged-in desktop user. If the association
+already matches the check below, keep it. Otherwise, back up the existing MIME
+configuration and set the PDF handler:
+
+```bash
+mimeapps="${XDG_CONFIG_HOME:-$HOME/.config}/mimeapps.list"
+if [[ -f "$mimeapps" ]]; then
+  cp -a -- "$mimeapps" "$mimeapps.backup-$(date +%Y%m%d-%H%M%S)"
+fi
 xdg-mime default org.pwmt.zathura.desktop application/pdf
 ```
+
+Verify both PDF support and the default application:
+
+```bash
+zathura --version
+xdg-mime query default application/pdf
+```
+
+The version output must list the `pdf-mupdf` plugin, and the MIME query must
+return `org.pwmt.zathura.desktop`. Zathura's [document formats are provided by
+plugins](https://pwmt.org/projects/zathura/plugins/), so installing the reader
+alone is insufficient. Open the test PDF in the next section to verify the
+complete build-and-view workflow.
+
+## LaTeX and Carlito
+
+Install the baseline for the MOVER Beamer slides and Portuguese activity reports:
+
+```bash
+omarchy pkg add texlive-binextra texlive-latexrecommended texlive-latexextra \
+  texlive-fontsrecommended texlive-fontsextra texlive-pictures \
+  texlive-langportuguese poppler
+```
+
+These packages provide `latexmk`, pdfLaTeX, Beamer/TikZ, the required font
+collections, Portuguese language support, and PDF inspection tools. Project
+Python environments and additional project-specific dependencies are described
+in their own repositories.
+
+The [TeX Live additional fonts collection](https://archlinux.org/packages/extra/any/texlive-fontsextra/)
+provides [Carlito's TeX support](https://ctan.org/pkg/carlito), including the style,
+font metrics, and map needed by `\usepackage[sfdefault]{carlito}` and
+`\pdfmapfile{+carlito.map}`. The [desktop `ttf-carlito` package](https://archlinux.org/packages/extra/any/ttf-carlito/files/)
+contains TTF fonts and Fontconfig settings; it does not supply these TeX files.
+`texlive-fontsextra` is a large collection; `pacman -Si texlive-fontsextra` shows
+its current download and installed sizes.
+
+Check the tools and TeX's file lookup after installation:
+
+```bash
+command -v latexmk pdflatex pdffonts
+kpsewhich beamer.cls
+kpsewhich carlito.sty
+kpsewhich carlito.map
+kpsewhich mweights.sty
+```
+
+Every lookup must print a path. If Carlito files are missing, inspect
+`pacman -Q texlive-fontsextra` and `pacman -Qkk texlive-fontsextra` before
+continuing. Installing a desktop font or opening an existing PDF does not verify
+that new PDFs can be built.
+
+### Compile and open a test PDF
+
+Run this in a terminal after the checks above pass. It exercises the same
+pdfLaTeX/Carlito setup as the slides and keeps its output in a temporary folder:
+
+```bash
+smoke_dir=$(mktemp -d "${TMPDIR:-/tmp}/omarchy-carlito.XXXXXX")
+cat > "$smoke_dir/carlito-check.tex" <<'TEX'
+\documentclass{beamer}
+\usepackage[sfdefault]{carlito}
+\pdfmapfile{+carlito.map}
+\usefonttheme{professionalfonts}
+\begin{document}
+\begin{frame}{Carlito PDF check}
+Regular text, \textbf{bold text}, \textit{italic text},
+and \textbf{\textit{bold italic text}}.
+\end{frame}
+\end{document}
+TEX
+pdflatex -interaction=nonstopmode -halt-on-error \
+  -output-directory="$smoke_dir" "$smoke_dir/carlito-check.tex"
+```
+
+After compilation succeeds, inspect the embedded fonts and open the result from
+the same terminal in an unlocked graphical session:
+
+```bash
+pdffonts "$smoke_dir/carlito-check.pdf"
+xdg-open "$smoke_dir/carlito-check.pdf"
+```
+
+The font table should list embedded Carlito faces (`emb` is `yes`), and Zathura
+should open the PDF. Then run each project's documented build to check its full
+dependency set. Record any build failure before considering the setup complete.
 
 ## Touchpad Right Click
 
@@ -499,6 +604,11 @@ Restart Omarchy Shell after installing the plugins, then enable and verify the
 clock timer using the commands in **Clock Refresh Safeguard**. Verify the clock,
 battery panel, and agents widget in the running shell. Restart Neovim to load
 its plugin overrides.
+
+For a fresh installation, also complete the **Zathura** and **LaTeX and Carlito**
+checks, including compiling and opening the test PDF. Verify these prerequisites
+from the installed system instead of relying on a previous machine's completion
+history.
 
 If a change fails validation, restore the affected files from the backups and
 reload the affected component. Report what was applied and any remaining work.
