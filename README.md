@@ -1,6 +1,8 @@
+<!-- README.md -->
+
 # Omarchy Laptop Config
 
-Personal configuration for Omarchy Quattro.
+Personal configuration for Omarchy 4.5.0 (Quattro RS).
 
 ## Target System
 
@@ -10,15 +12,18 @@ Personal configuration for Omarchy Quattro.
 
 ## Configuration workflow
 
-`README.md` is the setup specification for Omarchy Quattro. Agents apply its
-instructions directly to the laptop's user configuration, preserving unrelated
-settings. The former comparison/deployment scripts, manifest, and duplicate
-`.config` snapshot have been retired; Git history retains them.
+This setup is being rebuilt for Omarchy 4.5.0, one configuration at a time.
+Implement the next step in `setup.py`, review it, and validate it before adding
+another step. The script currently covers the steps through **Displays and Ten Workspaces per Monitor**,
+in README order. Manual application setup is described
+below. It uses Python 3 and TOMLKit, listed in `requirements.txt`.
+Code follows the general and Python rules in the sibling `swe-standards`
+repository.
 
-Custom plugins and workspace logic live in `assets/` because their complete
-implementations are needed to reproduce the setup. Installation steps below
-identify their destinations. These are source assets, not a home-directory
-snapshot.
+The previous assets, installer, and tests were removed. Later sections are
+retained as reference; their commands and file paths need to be reviewed for
+4.5.0 before implementation. Git history retains
+the previous source code. Do not restore it without reviewing compatibility.
 
 On a fresh or reinstalled system, check each applicable section against the
 current machine. Completion on a previous installation is historical context.
@@ -33,29 +38,57 @@ git clone https://github.com/LuisAlbertoVasquezVargas/omarchy-configs-laptop.git
 cd omarchy-configs-laptop
 ```
 
-## Ghost Pastel Theme
-
-Install and activate the Ghost Pastel community theme:
+Create and activate the project virtual environment:
 
 ```bash
-omarchy theme install https://github.com/row-huh/omarchy-ghost-pastel-theme
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
-The theme is installed under `~/.config/omarchy/themes/ghost-pastel`.
+Activate `.venv` in each terminal before running the script. Reinstall from
+`requirements.txt` when dependencies change. TOMLKit preserves comments and
+unrelated settings when updating TOML configuration.
 
-No Ghost Pastel-specific border override is required. The window configuration
-reads the currently applied theme's `colors.toml`: `color6` supplies the focused
-border and `background` supplies the inactive border.
+## Ghost Pastel Theme
+
+After reviewing the code, run it as your desktop user from an unlocked
+graphical session, without `sudo` or command-line arguments:
+
+```bash
+python setup.py
+```
+
+The script uses `omarchy theme install` with the
+[Ghost Pastel repository](https://github.com/row-huh/omarchy-ghost-pastel-theme)
+if the theme is missing. Installation also activates the theme. If Ghost Pastel
+is already installed, the script prints a message and skips it, even if another
+theme is active.
+
+The theme is installed under `~/.config/omarchy/themes/ghost-pastel`. A first
+installation requires network access. The script checks the installed theme
+list after installation. Verify that the list includes `Ghost Pastel`:
+
+```bash
+omarchy theme list
+```
+
+After a new installation, confirm the bar, wallpaper, and terminal colors
+visually too. Custom border colors will be reviewed in the later window-layout
+step.
 
 ## Brave
 
-Install Brave:
+Run `python setup.py` to install Brave after the Ghost Pastel step. If the
+`brave` executable is already available, the script prints a message and skips
+installation. Otherwise, it uses Omarchy's browser installer:
 
 ```bash
 omarchy install browser brave
 ```
 
-Then set Brave as the default browser:
+The script checks that `brave` is available after installation. Then manually
+set Brave as the default browser:
 
 ```bash
 omarchy default browser brave
@@ -79,27 +112,48 @@ omarchy default browser brave
 
 ## WhatsApp
 
-Nothing to install. WhatsApp comes preinstalled as an Omarchy web app.
+WhatsApp comes preinstalled as an Omarchy web app in this version.
+`python setup.py` reads the current Omarchy version with `omarchy version` and
+prints `WhatsApp already installed in version CURRENT_VERSION`. This step only
+prints the message. Open WhatsApp from the app launcher and link your phone
+manually.
 
 ## Slack
 
-Install Slack as an Omarchy web app:
+`python setup.py` only prints `Slack can be installed as a service.`
+Slack installation and sign-in are manual steps. The web-app option is:
 
 ```bash
 omarchy webapp install "Slack" "https://app.slack.com/client" ""
 ```
 
-The empty icon argument lets Omarchy download Slack's icon automatically. Open the app launcher with `Super + Space`, search for **Slack**, and sign in to the workspace. Allow notifications when Brave prompts for permission.
+The empty icon argument lets Omarchy download Slack's icon automatically. Open
+the app launcher with `Super + Space`, search for **Slack**, and sign in to the
+workspace. Allow notifications when the browser prompts for permission.
 
-Because Brave is the configured default browser, Slack opens in a standalone Brave web-app window.
+If Brave is the configured default browser, Slack opens in a standalone Brave
+web-app window.
 
 ## Discord
 
-Nothing to install. Discord comes preinstalled as an Omarchy web app. Open the app launcher with `Super + Space`, search for **Discord**, and sign in.
+Discord comes preinstalled as an Omarchy web app in this version.
+`python setup.py` reads the current Omarchy version with `omarchy version` and
+prints `Discord already installed in version CURRENT_VERSION`. This step only
+prints the message. Open the app launcher with `Super + Space`, search for
+**Discord**, and sign in manually.
 
-Because Brave is the configured default browser, Discord opens in a standalone Brave web-app window.
+If Brave is the configured default browser, Discord opens in a standalone Brave
+web-app window.
 
 ## Zathura
+
+`python setup.py` installs any missing packages below and verifies that Zathura
+loads its `pdf-mupdf` plugin. It then checks the PDF association, skips it if
+already correct, or backs up the existing `mimeapps.list` before setting and
+verifying Zathura as the default. Backups have a timestamp suffix alongside
+the original file. The script respects `XDG_CONFIG_HOME`.
+
+The equivalent manual steps are:
 
 Install the reader, its PDF backend, and the XDG association tools. `omarchy pkg
 add` skips packages that are already installed.
@@ -130,10 +184,16 @@ xdg-mime query default application/pdf
 The version output must list the `pdf-mupdf` plugin, and the MIME query must
 return `org.pwmt.zathura.desktop`. Zathura's [document formats are provided by
 plugins](https://pwmt.org/projects/zathura/plugins/), so installing the reader
-alone is insufficient. Open the test PDF in the next section to verify the
-complete build-and-view workflow.
+alone is insufficient. The next section includes an optional manual PDF test
+for checking the complete build-and-view workflow.
 
 ## LaTeX and Carlito
+
+`python setup.py` installs missing packages and quietly verifies the tools and
+TeX file lookups below. Existing packages are skipped. Routine runs print short
+status messages without compiling a sample document or opening a PDF viewer.
+
+The equivalent manual checks are:
 
 Install the baseline for the MOVER Beamer slides and Portuguese activity reports:
 
@@ -150,8 +210,9 @@ in their own repositories.
 
 The [TeX Live additional fonts collection](https://archlinux.org/packages/extra/any/texlive-fontsextra/)
 provides [Carlito's TeX support](https://ctan.org/pkg/carlito), including the style,
-font metrics, and map needed by `\usepackage[sfdefault]{carlito}` and
-`\pdfmapfile{+carlito.map}`. The [desktop `ttf-carlito` package](https://archlinux.org/packages/extra/any/ttf-carlito/files/)
+font metrics, and map needed by `\usepackage[sfdefault]{carlito}`. TeX Live
+registers the font map during installation; loading it explicitly again causes
+duplicate fontmap warnings. The [desktop `ttf-carlito` package](https://archlinux.org/packages/extra/any/ttf-carlito/files/)
 contains TTF fonts and Fontconfig settings; it does not supply these TeX files.
 `texlive-fontsextra` is a large collection; `pacman -Si texlive-fontsextra` shows
 its current download and installed sizes.
@@ -171,9 +232,10 @@ Every lookup must print a path. If Carlito files are missing, inspect
 continuing. Installing a desktop font or opening an existing PDF does not verify
 that new PDFs can be built.
 
-### Compile and open a test PDF
+### Compile and open a test PDF (manual)
 
-Run this in a terminal after the checks above pass. It exercises the same
+Run this only when you want to verify PDF compilation and viewing, such as on
+a fresh installation or when troubleshooting. It exercises the same
 pdfLaTeX/Carlito setup as the slides and keeps its output in a temporary folder:
 
 ```bash
@@ -181,7 +243,6 @@ smoke_dir=$(mktemp -d "${TMPDIR:-/tmp}/omarchy-carlito.XXXXXX")
 cat > "$smoke_dir/carlito-check.tex" <<'TEX'
 \documentclass{beamer}
 \usepackage[sfdefault]{carlito}
-\pdfmapfile{+carlito.map}
 \usefonttheme{professionalfonts}
 \begin{document}
 \begin{frame}{Carlito PDF check}
@@ -202,11 +263,21 @@ pdffonts "$smoke_dir/carlito-check.pdf"
 xdg-open "$smoke_dir/carlito-check.pdf"
 ```
 
-The font table should list embedded Carlito faces (`emb` is `yes`), and Zathura
-should open the PDF. Then run each project's documented build to check its full
+The font table should list `Crlt`, `Crlt-Bold`, `Crlt-Italic`, and
+`Crlt-BoldItalic` with `emb` set to `yes`. These are Carlito's PDF font names.
+Zathura should open the PDF. Then run each project's documented build to check its full
 dependency set. Record any build failure before considering the setup complete.
 
 ## Touchpad Right Click
+
+`python setup.py` reloads Hyprland, checks for configuration errors, and reads
+the effective touchpad setting. If lower-right clicking is already enabled,
+the step prints a message and skips editing. Otherwise, it appends the override
+below to the existing `input.lua`, preserving unrelated settings and backing
+up the original with a timestamp suffix. The script validates Lua syntax before
+writing, reloads Hyprland, and verifies the setting. Failed validation restores
+the backup and reloads the previous configuration. Run this from the active
+graphical session, then test a lower-right touchpad click manually.
 
 Use the touchpad's lower-right click area for right-click. In Hyprland, this is
 controlled by the `clickfinger_behavior` touchpad setting:
@@ -227,6 +298,12 @@ hl.config({
 
 ### Neo-tree
 
+`python setup.py` creates the visibility override below and skips it on later
+runs if unchanged. Existing plugin specifications are retained as a nested
+Lazy.nvim specification, followed by this visibility override so unrelated
+options and plugins are preserved. Changed files are backed up beside the
+original with a timestamp suffix. Lua syntax is checked before writing.
+
 Show hidden, filtered, and Git-ignored items in Neo-tree by default while keeping their filtered styling.
 
 Path: `~/.config/nvim/lua/plugins/neo-tree.lua`
@@ -246,9 +323,15 @@ return {
 }
 ```
 
-Restart Neovim or reopen Neo-tree to apply the change.
+Restart Neovim to load the plugin override, then open Neo-tree and confirm
+hidden and Git-ignored files are visible with their filtered styling.
 
 ### Image Rendering
+
+`python setup.py` installs ImageMagick if its `magick` command is missing,
+then creates or merges the image-rendering override. Existing plugin settings
+are preserved, changed files are backed up, and Lua syntax is validated before
+writing. An unchanged override is skipped.
 
 Enable Snacks image rendering so supported image files can be displayed inside Neovim.
 
@@ -259,15 +342,26 @@ return {
   {
     "folke/snacks.nvim",
     opts = {
-      image = {},
+      image = {
+        enabled = true,
+      },
     },
   },
 }
 ```
 
-Restart Neovim after creating the file.
+Restart Neovim after creating the file. Open an image in a terminal supporting
+the Kitty graphics protocol, such as Ghostty or Kitty, and confirm it renders.
+Run `:checkhealth snacks` if rendering fails. Configuration and syntax checks
+alone do not verify terminal image support.
 
 ## Codex CLI Approval Defaults
+
+`python setup.py` merges the defaults below using TOMLKit. It skips the edit
+when all three top-level settings already match. Otherwise, it backs up the
+existing file and validates the result with `codex features list`, restoring
+the backup if validation fails. `CODEX_HOME` is respected when set. The Codex
+CLI must already be installed; account sign-in remains manual.
 
 Make **Approve for me** the default for new Codex CLI sessions.
 
@@ -287,24 +381,22 @@ remains enabled. These defaults apply to new sessions; existing sessions retain
 their settings. Start a new session and use `/permissions` to check the active
 permission mode.
 
-This machine was updated on 2026-10-28. Only the three settings above and a
-separating blank line were added; other settings were preserved. The backup is
-`/home/lvasquez/.codex/config.toml.backup-20261028-105614-016444`.
-
-Verification completed with `codex-cli 0.164.0`: the TOML parsed successfully,
-and `codex features list` loaded the updated configuration successfully.
-`codex --strict-config features list` is unsupported in this version.
-
-Official references: [Sandbox](https://learn.chatgpt.com/docs/sandboxing) and
+Official references: [Auto-review](https://learn.chatgpt.com/docs/sandboxing/auto-review) and
 [Configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference).
 
 ## Steam
+
+`python setup.py` prints a message and skips installation if the `steam`
+executable is already available. Otherwise, it uses Omarchy's installer,
+which selects the system's graphics dependencies, then checks that the
+executable is available:
 
 ```bash
 omarchy install gaming steam
 ```
 
-Dota 2 launch options:
+Steam sign-in and game installation remain manual. Set these Dota 2 launch
+options manually in Steam:
 
 ```bash
 SDL_AUDIODRIVER=pulse PULSE_LATENCY_MSEC=60 %command% -console -novid
@@ -312,40 +404,72 @@ SDL_AUDIODRIVER=pulse PULSE_LATENCY_MSEC=60 %command% -console -novid
 
 ## Clock Format
 
-Migrates the previous Waybar clock format to Omarchy Shell.
+`python setup.py` merges the three format settings below into the existing
+clock entry, preserving its position, other widget options, and unrelated shell
+settings. The built-in 4.5 clock supports week numbers, so a custom plugin is
+unnecessary. If all formats match, the script prints a message and skips editing.
+
+Changed files are backed up before the JSON is written atomically. If the user
+configuration inherits the default bar layout, the script uses Omarchy's
+installed layout as the starting point. A missing clock is added in the center;
+duplicate clock entries are reported for resolution. An existing legacy
+`lvasquez.clock` entry keeps its plugin ID.
 
 Path: `~/.config/omarchy/shell.json`
 
 ```json
 {
-  "id": "lvasquez.clock",
+  "id": "omarchy.clock",
   "format": "dd MMM ddd · 'W'ww · HH:mm",
   "formatAlt": "dd MMM ddd · 'W'ww · HH:mm",
   "verticalFormat": "HH\n—\nmm"
 }
 ```
 
+The shell reloads the settings automatically. Confirm the displayed date, week
+number, and time in the bar after running the script.
+
 ## Battery Format
 
-Migrates the previous Waybar `{capacity}% {icon}` battery format to Omarchy Shell so the percentage remains visible beside the battery icon.
+`python setup.py` enables the percentage beside the battery icon using the
+built-in `omarchy.power` widget. It skips an existing `showPercentage: true`,
+preserves the widget's position and unrelated settings, and backs up changes
+before writing JSON atomically. A missing power widget is added on the right;
+duplicate entries are reported for resolution. An existing legacy
+`lvasquez.power` entry keeps its plugin ID.
 
 Path: `~/.config/omarchy/shell.json`
 
 ```json
 {
-  "id": "lvasquez.power",
+  "id": "omarchy.power",
   "showPercentage": true
 }
 ```
 
+The shell reloads the settings automatically. Confirm the percentage appears
+beside the battery icon in the horizontal bar.
+
 ### Battery Panel Refresh
 
-The managed `lvasquez.power` plugin is a user-owned clone of `omarchy.power`.
-Its open panel refreshes battery details, power profiles, and system stats every
-2 seconds (`interval: 2000` in
-`assets/plugins/lvasquez.power/Panel.qml`). The bar percentage continues
-to update through UPower independently. The timer runs only while the panel is
-open.
+`python setup.py` changes the open power panel's refresh interval from five
+seconds to two seconds. It clones the installed `omarchy.power` plugin with
+`omarchy plugin clone omarchy.power`, producing `~/.config/omarchy/plugins/<username>.power/`.
+An existing clone is reused. The step changes only the refresh timer in
+`Panel.qml`, preserving the rest of the current plugin.
+
+QML syntax is validated before editing. Backups of affected files are stored
+under `${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/backups/power-widget-<timestamp>/`,
+outside the watched plugin directory. The shell is restarted to load the
+change. If activation fails, the script restores the previous files and removes
+a clone created by this attempt. An active two-second configuration is skipped.
+An unexpected timer implementation stops the step for review.
+
+Open the battery panel and confirm details refresh every two seconds; close it
+and confirm polling stops. The percentage continues to update through UPower
+independently.
+
+### Charging Icon
 
 The charging icon follows UPower's AC/battery state without waiting for its
 charging-rate or time-to-full estimates. Those estimates can lag plug-in by
@@ -353,215 +477,124 @@ about 10 seconds or fluctuate during charging. The custom `Model.js` uses
 UPower's `PendingCharge` state, or `FullyCharged` below 99%, to recognize a
 charge hold; it does not infer a hold from a zero rate or a long estimate.
 
-After updating the power plugin's code, restart Omarchy Shell. On this machine,
-the plugin change log and `rescanPlugins` reported reloads while the running
-widget retained its previous code. Verify the active widget directly:
+`python setup.py` applies this change to the power clone created by the
+preceding refresh step. It runs the Node.js regression checks against a staged
+model before editing, backs up `Model.js` under
+`${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/backups/charging-icon-<timestamp>/`,
+and restarts the shell. A failed restart restores the backup. An unchanged
+model is skipped; unfamiliar charge-hold logic stops the step for review.
+
+Node.js is required for the regression checks. To run them manually against
+the current user's clone:
 
 ```bash
-omarchy restart shell
-omarchy-shell omarchy.power status
+POWER_MODEL_PATH="$HOME/.config/omarchy/plugins/$USER.power/Model.js" \
+  node tests/power-model.test.cjs
 ```
 
-The status reports the current UPower state, charge-limit decision, icon, and
-bar button text. `zeroRateIsThreshold: false` confirms that the loaded model
-does not mistake a temporary zero charging rate for a charge hold.
-
-After installing the plugin, unplug the charger, wait five seconds, and plug
-it back in. Confirm that the bar's charging icon appears promptly and stays
-visible while charging, including with the battery panel closed. Run the model
-regression checks with `node --test assets/plugins/lvasquez.power/Model.test.js`.
-Live verification on 2026-10-28, after restarting the shell, showed the bar
-switching to the charging icon about 0.34 seconds after the kernel reported AC
-online, even while UPower's charging rate was still zero.
+Unplug the charger, wait five seconds, and plug it back in. Confirm that the
+charging icon appears promptly and stays visible while charging, including
+with the battery panel closed. Model tests do not replace this live check.
 
 ## Agents Widget
 
-The managed `lvasquez.agents` plugin preserves the live agents widget and its
-local usage collectors, including the Codex RPC read timeout fix. Its source,
-assets, and executable collectors are preserved in `assets/plugins/lvasquez.agents/`.
-Install this directory using the plugin instructions below.
+Use the default `omarchy.agents` widget supplied by Omarchy 4.5.0.
+`python setup.py` only prints `Using default Agents widget from Omarchy version
+CURRENT_VERSION`, reading the installed version with `omarchy version`.
+Provider preferences and account setup remain in Omarchy's current interface.
 
 ## Compact Window Layout and Focus Border
 
-Path: `~/.config/hypr/looknfeel.lua`
+`python setup.py` appends the reviewed
+[compact layout configuration](config/hypr/compact-layout.lua) to
+`~/.config/hypr/looknfeel.lua`, preserving existing appearance settings. It sets
+inner and outer window gaps to zero and border width to three pixels.
 
-```lua
--- Change the default Omarchy look'n'feel.
+The Lua block reads the current theme's `colors.toml` on every Hyprland reload.
+Focused borders use `color6`, falling back to `accent`; inactive borders use
+`background`. The same colors apply to grouped windows. Six- and eight-digit
+hex colors are supported. If the needed palette fields are unavailable, the
+existing theme's border colors are retained.
 
-local function load_current_theme_colors()
-  local colors = {}
-  local home = os.getenv("HOME")
+The script validates Lua syntax, backs up changed files with a timestamp
+suffix, reloads Hyprland, and checks `hyprctl configerrors`. A failed reload
+restores the original file and reloads it. An unchanged configuration is
+skipped after validating the existing Hyprland configuration.
 
-  if not home then
-    return colors
-  end
+After running the script, focus different windows and confirm the spacing,
+three-pixel borders, and theme colors. Repeat the visual check after switching
+themes.
 
-  local file = io.open(home .. "/.local/state/omarchy/current/theme/colors.toml", "r")
+## Displays and Ten Workspaces per Monitor
 
-  if not file then
-    return colors
-  end
+`python setup.py` appends the reviewed [display profiles](config/hypr/displays.lua)
+to `~/.config/hypr/monitors.lua`. Existing fallback rules, GTK scaling, and
+unrelated monitor settings are preserved. Changed files are backed up, Lua
+syntax is validated, and Hyprland is reloaded and checked for configuration
+errors. A failed reload restores the backup. An unchanged override is skipped.
 
-  for line in file:lines() do
-    local name, value = line:match('^%s*([%w_]+)%s*=%s*"([^"]+)"')
+The display profiles are:
 
-    if name then
-      colors[name] = value
-    end
-  end
+- Laptop `eDP-1`: preferred resolution, positioned to the left, retaining the
+  existing `omarchy_monitor_scale` value. If that variable is absent, Hyprland's
+  automatic scale is used.
+- Samsung LU28R55 (`HX5W200353`): 1920×1080 at 60 Hz, scale 1, at `0x0`.
+- BenQ G610HDAL (`A5B03247019`): 1366×768 at 59.79 Hz, scale 1, using
+  `auto-right` so it can sit beside the Samsung rather than overlap it.
 
-  file:close()
-  return colors
-end
+External monitors are matched by their descriptions, including model and serial,
+so their connector names can change across docks. Unrecognized monitors keep
+the existing fallback rule. Placement follows Hyprland's
+[automatic positioning](https://wiki.hypr.land/configuring/core/monitors/positioning/).
+The monitor calls stay on single lines so Omarchy's clamshell helper can read
+the laptop's position and scale.
 
-local function to_hypr_color(value)
-  if not value then
-    return nil
-  end
+Workspaces use **Omarchy 4.5's native ten slots per monitor**. The script prints
+`Using native Omarchy workspace behavior: 10 workspaces per monitor in version CURRENT_VERSION`.
+The bar labels each monitor's workspaces locally, while Hyprland's underlying
+IDs use blocks of ten. `Super + 1` through `Super + 0` select slots on the
+focused monitor; the default window-moving shortcuts are retained. Native
+docking and clamshell handling manage workspace migration when screens are
+connected, disconnected, or disabled. No custom workspace-placement module is
+installed.
 
-  local hex = value:match("^#(%x+)$")
+The stock workspace widget always shows the first five slots and adds later
+slots only when they exist. `python setup.py` clones `omarchy.workspaces` into
+`~/.config/omarchy/plugins/<username>.workspaces/` and changes its button list
+to show all ten slots, including empty ones. The tenth button is labeled `0`,
+matching the keyboard shortcut; the active button keeps Omarchy's layout glyph.
+Guest workspaces remain visible after the monitor's own ten slots.
 
-  if hex and #hex == 6 then
-    return "rgb(" .. hex .. ")"
-  elseif hex and #hex == 8 then
-    return "rgba(" .. hex .. ")"
-  end
+The step validates QML and runs workspace-list checks before changing the
+widget. Backups are stored under
+`${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/backups/workspaces-widget-<timestamp>/`.
+It restarts the shell after activation, restores previous files if that fails,
+and skips an already active, updated clone. It changes the bar display while
+retaining Omarchy's native workspace manager.
 
-  return value
-end
-
-local theme_colors = load_current_theme_colors()
-local active_border_color = to_hypr_color(theme_colors.color6 or theme_colors.accent)
-local inactive_border_color = to_hypr_color(theme_colors.background)
-local general = {
-  gaps_in = 0,
-  gaps_out = 0,
-  border_size = 3,
-}
-local config = { general = general }
-
-if active_border_color and inactive_border_color then
-  general.col = {
-    active_border = active_border_color,
-    inactive_border = inactive_border_color,
-  }
-
-  config.group = {
-    col = {
-      border_active = active_border_color,
-      border_inactive = inactive_border_color,
-    },
-  }
-end
-
--- https://wiki.hypr.land/Configuring/Basics/Variables/#general
-hl.config(config)
-```
-
-The code reads the current theme palette on each reload.
-
-## Displays and Ten Workspaces
-
-The laptop screen sits to the left of external monitors. Monitor rules match
-model and serial, so the Samsung's resolution is not applied to the BenQ.
-
-- BenQ G610HDAL (`A5B03247019`): 1366×768 at 59.79 Hz, scale 1.
-  With the lid open, workspaces 1–7 belong to the laptop and 8–10 to the BenQ.
-- Samsung LU28R55 (`HX5W200353`): 1920×1080 at 60 Hz, scale 1.
-  Other external monitors retain the earlier workspace-7 split.
-- With the internal screen disabled, all ten workspaces use the external screen.
-- With no external screen, all ten workspaces use the laptop.
-
-Set the monitor rules in `~/.config/hypr/monitors.lua`:
-
-```lua
--- See https://wiki.hypr.land/Configuring/Basics/Monitors/
--- List current monitors and supported resolutions with: hyprctl monitors all
-
-local omarchy_gdk_scale = 2
-local omarchy_monitor_scale = "auto"
-
-hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = omarchy_monitor_scale })
-
--- Samsung external display: 1080p at 60 Hz.
-hl.monitor({ output = "desc:Samsung Electric Company LU28R55 HX5W200353", mode = "1920x1080@60", position = "0x0", scale = 1 })
-
--- BenQ G610HDAL: preferred panel resolution, without scaling.
-hl.monitor({ output = "desc:BNQ BenQ G610HDAL A5B03247019", mode = "1366x768@59.79", position = "0x0", scale = 1 })
-
--- Place the laptop to the left of external displays.
-hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto-left", scale = omarchy_monitor_scale })
-```
-
-Copy `assets/hypr/workspace-monitors.lua` to
-`~/.config/hypr/workspace-monitors.lua`. Add this once to
-`~/.config/hypr/hyprland.lua`, after the default and personal config imports:
-
-```lua
-require("hypr.workspace-monitors")
-```
-
-The module handles monitor events and moves existing workspaces automatically.
-
-After applying these settings, verify with:
+After applying, check the live output:
 
 ```bash
-hyprctl reload
+hyprctl monitors all
 hyprctl configerrors
 hyprctl -j workspaces | jq 'sort_by(.id) | map({id, monitor, windows})'
 ```
 
+Verify each external monitor's resolution and refresh rate when connected.
+If both are connected, confirm they do not overlap and the laptop stays left.
+Test workspace shortcuts on each focused monitor, then unplug/reconnect the
+external display and close/reopen the lid while docked. These hardware checks
+remain necessary; only the laptop display was connected during development.
+
 ## Clock Refresh Safeguard
 
-The local `lvasquez.clock` plugin supports an explicit refresh and a diagnostic
-status call. A user systemd timer requests a refresh every 30 seconds, independently
-of the shell's QML timers, to correct stale clock displays after resume. This is
-a workaround; it does not block suspend or restart the shell periodically.
+The previous setup included a custom clock plugin and a user systemd timer
+that requested a refresh every 30 seconds to address stale displays after
+resume. The files were removed during the reset. Their presence in Git history
+does not establish that the workaround was tested or is needed on 4.5.0.
 
-Create `~/.config/systemd/user/omarchy-clock-refresh.service` with:
-
-```ini
-[Unit]
-Description=Refresh the Omarchy clock independently of QML timers
-PartOf=graphical-session.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/timeout 8 /usr/bin/omarchy-shell omarchy.clock refresh
-TimeoutStartSec=10
-```
-
-Create `~/.config/systemd/user/omarchy-clock-refresh.timer` with:
-
-```ini
-[Unit]
-Description=Keep the Omarchy clock current across suspend and resume
-PartOf=graphical-session.target
-
-[Timer]
-OnCalendar=*-*-* *:*:00,30
-OnActiveSec=2
-AccuracySec=1s
-Persistent=true
-Unit=omarchy-clock-refresh.service
-
-[Install]
-WantedBy=graphical-session.target
-```
-
-After applying the repository on a fresh installation, run these commands from
-an unlocked graphical session to load the plugins and enable the timer:
-
-```bash
-systemctl --user daemon-reload
-omarchy restart shell
-systemctl --user enable --now omarchy-clock-refresh.timer
-omarchy-shell omarchy.clock status
-systemctl --user list-timers omarchy-clock-refresh.timer
-```
-
-No Stay Awake sleep-blocking service is included.
+Revisit this only if a stale clock can be reproduced, then test the fix across
+suspend and resume before including it in setup.
 
 ## Experimental: Intel GPU Driver Update
 
@@ -575,38 +608,36 @@ lspci -k -s 00:02.0
 
 ## Apply Configs with an Agent
 
-Follow the sections above rather than copying an entire configuration tree.
+Implement one reviewed section at a time in `setup.py` rather than copying an
+entire configuration tree. Apply it to the live desktop when the user requests.
 Before changing each destination, back up its existing contents and inspect
 its current settings. Merge the documented overrides while retaining unrelated
 user settings and Omarchy's default imports. Skip settings already applied.
 
 ### Custom plugin installation
 
-Copy each directory in `assets/plugins/` to the matching directory under
-`~/.config/omarchy/plugins/`, preserving executable permissions on `usage-codex`
-and `usage-update`. Back up any existing destination first. These user-owned
-plugins preserve the custom clock refresh, power panel polling, and agent usage
-collector behavior; do not modify packaged plugins under `/usr/share/omarchy/`.
+The old plugin sources and installer were removed. Review each widget against
+the stock 4.5.0 implementation before reintroducing custom code. Install any
+reviewed user-owned plugins under `~/.config/omarchy/plugins/`, back up changed
+destinations, and preserve executable permissions on collectors. Packaged
+plugins under `/usr/share/omarchy/` stay untouched.
 
-In `~/.config/omarchy/shell.json`, merge the clock and battery settings shown
-above into the existing bar entries, replacing `omarchy.clock` with
-`lvasquez.clock` and `omarchy.power` with `lvasquez.power`. Replace
-`omarchy.agents` with `lvasquez.agents` in the existing agents entry. If no agents
-entry exists, insert `{ "id": "lvasquez.agents" }` in `bar.layout.right` after
-the tray entry. Preserve other bar entries and shell settings.
+The current setup uses the built-in `omarchy.clock` and `omarchy.agents`
+widgets. The reviewed power and workspace-display customizations use the
+`<username>.power` and `<username>.workspaces` clones created by Omarchy's CLI.
+Preserve widget positions and unrelated bar options when applying these steps.
 
 ### Verification and recovery
 
 Validate edited Lua files with `luac -p` and JSON files with
 `python -m json.tool` before applying. Reload Hyprland and check
-`hyprctl configerrors`; confirm workspaces 1–10 and their monitor assignments.
-Restart Omarchy Shell after installing the plugins, then enable and verify the
-clock timer using the commands in **Clock Refresh Safeguard**. Verify the clock,
-battery panel, and agents widget in the running shell. Restart Neovim to load
-its plugin overrides.
+`hyprctl configerrors`; verify the native ten-workspace slots on each monitor.
+Restart Omarchy Shell after installing reviewed plugins and verify the affected
+widgets in the running shell. Restart Neovim to load its plugin overrides.
 
 For a fresh installation, also complete the **Zathura** and **LaTeX and Carlito**
-checks, including compiling and opening the test PDF. Verify these prerequisites
+dependency checks. The compilation and PDF-viewing example is a separate manual
+check. Routine setup must not compile or open sample PDFs. Verify prerequisites
 from the installed system instead of relying on a previous machine's completion
 history.
 
