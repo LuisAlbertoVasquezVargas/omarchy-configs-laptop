@@ -85,6 +85,9 @@ def report_whatsapp():
     current_version = omarchy_output("version")
     print(f"WhatsApp already installed in version {current_version}")
 
+def configure_whatsapp_workspace():
+    configure_hyprland_override("hyprland.lua", "whatsapp-workspace.lua", "WhatsApp workspace placement")
+
 def report_slack():
     print("Slack can be installed as a service.")
 
@@ -636,6 +639,7 @@ def main():
     install_brave()
     set_brave_default()
     report_whatsapp()
+    configure_whatsapp_workspace()
     report_slack()
     report_discord()
     install_zathura()

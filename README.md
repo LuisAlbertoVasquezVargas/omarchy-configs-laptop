@@ -121,9 +121,31 @@ again. A failed update restores the previous MIME settings. The script respects
 
 WhatsApp comes preinstalled as an Omarchy web app in this version.
 `python setup.py` reads the current Omarchy version with `omarchy version` and
-prints `WhatsApp already installed in version CURRENT_VERSION`. This step only
-prints the message. Open WhatsApp from the app launcher and link your phone
-manually.
+prints `WhatsApp already installed in version CURRENT_VERSION`. Open WhatsApp
+from the app launcher and link your phone manually.
+
+The script also configures new WhatsApp web-app windows to open on the launching
+monitor's tenth workspace, selected with **Super + 0**, if it has no windows.
+Opening WhatsApp then switches to that workspace. If it is occupied, WhatsApp
+stays on the workspace where it opens. Other windows, including ordinary browser
+tabs, are unaffected. The rule runs only when a new window opens; reloading the
+configuration or focusing an existing WhatsApp window does not move it.
+
+This uses Omarchy 4.5's native per-monitor workspace mapping: the tenth workspace
+can have an internal ID of 10, 20, or another multiple of ten. It preserves the
+native workspace shortcuts, docking, and clamshell behavior.
+
+The Lua event handler lives in `config/hypr/whatsapp-workspace.lua`. The script
+appends it to `~/.config/hypr/hyprland.lua`, preserving other settings, after
+backing up the original file beside it with a timestamp suffix. It checks Lua
+syntax, reloads Hyprland, verifies `hyprctl configerrors`, and restores the backup
+if validation fails. An existing matching configuration is skipped. The script
+respects `XDG_CONFIG_HOME`.
+
+To verify, launch a new WhatsApp window while the tenth workspace is empty, then
+repeat with another window on that workspace. The first launch should go to the
+tenth workspace; the second should remain on the current one. Close the WhatsApp
+window between launches so the browser creates a new one.
 
 ## Slack
 
