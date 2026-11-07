@@ -87,16 +87,23 @@ installation. Otherwise, it uses Omarchy's browser installer:
 omarchy install browser brave
 ```
 
-The script checks that `brave` is available after installation. Then manually
-set Brave as the default browser:
+After installing Brave, or skipping an existing installation, the script checks
+the current default browser and sets Brave as the default if needed. The
+equivalent commands are:
 
 ```bash
+omarchy default browser
 omarchy default browser brave
 ```
 
+If Brave is already the default, the second command is skipped. Otherwise, the
+script backs up the existing `mimeapps.list`, sets the default, and checks it
+again. A failed update restores the previous MIME settings. The script respects
+`XDG_CONFIG_HOME` and preserves unrelated associations, including the PDF reader.
+
 ### Setup
 
-1. Open Brave and set it as the default browser.
+1. Open Brave.
 2. Go to **Settings → Appearance → Theme** and select **Dark**.
 3. Go to **Settings → Sync** and select **I have a Sync Code**.
 4. On your smartphone:
@@ -498,10 +505,70 @@ with the battery panel closed. Model tests do not replace this live check.
 
 ## Agents Widget
 
-Use the default `omarchy.agents` widget supplied by Omarchy 4.5.0.
-`python setup.py` only prints `Using default Agents widget from Omarchy version
-CURRENT_VERSION`, reading the installed version with `omarchy version`.
-Provider preferences and account setup remain in Omarchy's current interface.
+`python setup.py` leaves the Agents configuration unchanged. Its step currently
+only prints `Using default Agents widget from Omarchy version CURRENT_VERSION`,
+reading the installed version with `omarchy version`. It does not install the
+experimental customization below. Provider preferences and account setup remain
+in Omarchy's current interface.
+
+### Experimental: Weekly Percentage and Reset Countdown
+
+> **Experimental:** This customization is active on the laptop and was visually
+> verified on Omarchy 4.5.0-3. It has not been integrated into `setup.py`.
+
+Show the percentage of the weekly allowance **used** beside the time until that
+allowance resets, immediately when the Agents panel opens:
+
+```text
+Weekly  ━━━━━░░░░░  35% · 3d 19h
+```
+
+Previously, this position showed only `3d 19h`; the percentage was available
+on hover. The example values change with usage and the reset countdown. Session
+and other limit rows retain their existing display, and the widget continues
+using Omarchy's own usage data and tooltips.
+
+The change lives in a user-owned clone:
+
+```text
+~/.config/omarchy/plugins/<username>.agents/Panel.qml
+```
+
+Before cloning or editing, back up `~/.config/omarchy/shell.json` and any
+existing cloned `Panel.qml` outside the watched plugin directory, under
+`${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/backups/agents-widget-<timestamp>/`.
+Keep the packaged plugin under `/usr/share/omarchy/` unchanged.
+
+To reproduce it, inspect and reuse an existing Agents clone, or create one with
+`omarchy plugin clone omarchy.agents` if absent. Cloning activates
+`<username>.agents` in the existing bar position.
+
+Inside `component CompactLimit`, set `compactValueMetrics.text` to reserve room
+for the weekly percentage and countdown:
+
+```qml
+text: compact.window && compact.window.title === "Weekly" ? "100% · 00h 00m" : "00h 00m"
+```
+
+In the `compactValue` text element, use these width and text bindings, preserving
+its other properties:
+
+```qml
+width: Math.ceil(Math.max(compactValueMetrics.advanceWidth, implicitWidth))
+text: {
+  var remaining = compact.resetMs > 0 ? root.formatDuration(compact.resetMs) : ""
+  if (!compact.window || compact.window.title !== "Weekly") return remaining
+  var used = Commons.I18n.formatNumber(Math.round(compact.window.percent * 100)) + "%"
+  return remaining ? used + " · " + remaining : used
+}
+```
+
+Validate the staged QML with `/usr/lib/qt6/bin/qmlformat --ignore-settings`
+before saving it to the clone. Restart the shell with `omarchy restart shell`,
+open the Agents panel, and confirm the weekly number and countdown fit without
+hovering. The local trial passed QML validation and this visual check. Preserve
+the active clone during routine setup; repeat the check after revising it for
+a newer Omarchy version.
 
 ## Compact Window Layout and Focus Border
 
@@ -622,10 +689,12 @@ reviewed user-owned plugins under `~/.config/omarchy/plugins/`, back up changed
 destinations, and preserve executable permissions on collectors. Packaged
 plugins under `/usr/share/omarchy/` stay untouched.
 
-The current setup uses the built-in `omarchy.clock` and `omarchy.agents`
-widgets. The reviewed power and workspace-display customizations use the
-`<username>.power` and `<username>.workspaces` clones created by Omarchy's CLI.
-Preserve widget positions and unrelated bar options when applying these steps.
+The automated setup uses the built-in `omarchy.clock` widget and leaves the
+Agents configuration unchanged. The laptop's experimental Agents customization
+uses `<username>.agents`. The reviewed power and workspace-display
+customizations use the `<username>.power` and `<username>.workspaces` clones
+created by Omarchy's CLI. Preserve widget positions and unrelated bar options
+when applying these steps.
 
 ### Verification and recovery
 

@@ -12,7 +12,9 @@ review it before adding the next configuration. Keep code review separate
 from applying changes to the live desktop unless the user asks to apply them.
 The script takes no command-line arguments. Each installation step skips an
 already installed component and prints a message instead of modifying it.
-Keep the Agents widget on Omarchy defaults; its step only reports the version.
+Keep the Agents setup step report-only. Preserve the experimental user-owned
+Agents clone documented in README.md, which shows Weekly usage percentage
+beside its reset countdown; it is not yet automated by setup.py.
 Use Omarchy 4.5's native ten-workspaces-per-monitor behavior. Preserve its
 workspace shortcuts, bar labels, docking, and clamshell handling; do not restore
 the retired shared-ten-workspace placement module.

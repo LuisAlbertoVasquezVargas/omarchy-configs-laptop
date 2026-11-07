@@ -51,6 +51,36 @@ def install_brave():
 
     print("Brave installed.")
 
+def set_brave_default():
+    current_default = omarchy_output("default", "browser")
+    if current_default == "brave":
+        print("Brave is already the default browser; skipping.")
+        return
+
+    config_directory = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+    mime_settings = config_directory / "mimeapps.list"
+    backup = None
+    if mime_settings.exists():
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        backup = mime_settings.with_name(f"mimeapps.list.backup-{timestamp}")
+        shutil.copy2(mime_settings, backup)
+        print(f"MIME settings backed up to {backup}", flush=True)
+
+    config_directory.mkdir(parents=True, exist_ok=True)
+    print("Setting Brave as the default browser...", flush=True)
+    try:
+        subprocess.run(["omarchy", "default", "browser", "brave"], check=True)
+        if omarchy_output("default", "browser") != "brave":
+            raise RuntimeError("Brave is not the default browser after configuration.")
+    except (OSError, RuntimeError, subprocess.CalledProcessError):
+        if backup is None:
+            mime_settings.unlink(missing_ok=True)
+        else:
+            shutil.copy2(backup, mime_settings)
+        raise
+
+    print("Brave set as the default browser.")
+
 def report_whatsapp():
     current_version = omarchy_output("version")
     print(f"WhatsApp already installed in version {current_version}")
@@ -604,6 +634,7 @@ def main():
 
     install_ghost_pastel()
     install_brave()
+    set_brave_default()
     report_whatsapp()
     report_slack()
     report_discord()
