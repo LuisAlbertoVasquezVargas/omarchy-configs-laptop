@@ -577,7 +577,14 @@ in Omarchy's current interface.
 ### Experimental: Weekly Percentage and Reset Countdown
 
 > **Experimental:** This customization is active on the laptop and was visually
-> verified on Omarchy 4.5.0-3. It has not been integrated into `setup.py`.
+> verified again on 2026-11-09 with Omarchy 4.5.0-3. It has not been integrated
+> into `setup.py`.
+
+The reviewed [Agents panel patch](config/omarchy/agents-weekly.patch) is copied
+from the PC repository's
+[`62e2f56` configuration](https://github.com/LuisAlbertoVasquezVargas/omarchy-configs/blob/62e2f56ad0dda0ac692e758f0d6d1616add225fb/config/omarchy/agents-weekly.patch).
+The laptop was using the stock widget when checked; applying this patch to a
+new `lvasquez.agents` clone restored the display described below.
 
 Show the percentage of the weekly allowance **used** beside the time until that
 allowance resets, immediately when the Agents panel opens:
@@ -606,32 +613,37 @@ To reproduce it, inspect and reuse an existing Agents clone, or create one with
 `omarchy plugin clone omarchy.agents` if absent. Cloning activates
 `<username>.agents` in the existing bar position.
 
-Inside `component CompactLimit`, set `compactValueMetrics.text` to reserve room
-for the weekly percentage and countdown:
+The patch changes only `component CompactLimit`: it reserves room for
+`100% · 00h 00m`, expands the value width for longer text, and uses Omarchy's
+locale formatter to show the rounded weekly percentage beside the countdown.
+Plain-text rendering and native usage collection are preserved.
 
-```qml
-text: compact.window && compact.window.title === "Weekly" ? "100% · 00h 00m" : "00h 00m"
+If the clone already contains these bindings, skip applying the patch. Otherwise,
+after backing up and cloning as described above, run this from the repository
+root to stage, validate, and install the change:
+
+```bash
+(
+  set -e
+  agents_panel="$HOME/.config/omarchy/plugins/$USER.agents/Panel.qml"
+  agents_stage=$(mktemp -d)
+  trap 'rm -rf "$agents_stage"' EXIT
+  cp "$agents_panel" "$agents_stage/Panel.qml"
+  patch --batch --forward --fuzz=0 "$agents_stage/Panel.qml" config/omarchy/agents-weekly.patch
+  /usr/lib/qt6/bin/qmlformat --ignore-settings "$agents_stage/Panel.qml" >/dev/null
+  cp "$agents_stage/Panel.qml" "$agents_panel"
+  omarchy restart shell
+)
 ```
 
-In the `compactValue` text element, use these width and text bindings, preserving
-its other properties:
-
-```qml
-width: Math.ceil(Math.max(compactValueMetrics.advanceWidth, implicitWidth))
-text: {
-  var remaining = compact.resetMs > 0 ? root.formatDuration(compact.resetMs) : ""
-  if (!compact.window || compact.window.title !== "Weekly") return remaining
-  var used = Commons.I18n.formatNumber(Math.round(compact.window.percent * 100)) + "%"
-  return remaining ? used + " · " + remaining : used
-}
-```
-
-Validate the staged QML with `/usr/lib/qt6/bin/qmlformat --ignore-settings`
-before saving it to the clone. Restart the shell with `omarchy restart shell`,
-open the Agents panel, and confirm the weekly number and countdown fit without
-hovering. The local trial passed QML validation and this visual check. Preserve
-the active clone during routine setup; repeat the check after revising it for
-a newer Omarchy version.
+A patch-context or QML validation failure stops before changing the live panel;
+review it against the installed Omarchy version before proceeding. Confirm that
+`<username>.agents` is enabled with `omarchy plugin list --json`, open the Agents
+panel, and check that the weekly number and countdown fit without hovering.
+This laptop passed QML validation and the live visual check. Its bar position
+and unrelated shell settings were also verified unchanged. Preserve the active
+clone during routine setup; repeat the check after revising it for a newer
+Omarchy version.
 
 ## Compact Window Layout and Focus Border
 
