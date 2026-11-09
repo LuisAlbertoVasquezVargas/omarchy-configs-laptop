@@ -91,9 +91,15 @@ def configure_whatsapp_workspace():
 def report_slack():
     print("Slack can be installed as a service.")
 
+def configure_slack_workspace():
+    configure_hyprland_override("hyprland.lua", "slack-workspace.lua", "Slack workspace placement")
+
 def report_discord():
     current_version = omarchy_output("version")
     print(f"Discord already installed in version {current_version}")
+
+def configure_discord_workspace():
+    configure_hyprland_override("hyprland.lua", "discord-workspace.lua", "Discord workspace placement")
 
 def install_zathura():
     required_packages = ["zathura", "zathura-pdf-mupdf", "xdg-utils"]
@@ -597,7 +603,7 @@ def configure_hyprland_override(filename, source_name, label):
     original = config_file.read_text()
 
     reload_hyprland(f"{label} check")
-    if original.rstrip().endswith(override.rstrip()):
+    if override.rstrip() in original:
         print(f"{label} is already configured; skipping.")
         return
 
@@ -641,7 +647,9 @@ def main():
     report_whatsapp()
     configure_whatsapp_workspace()
     report_slack()
+    configure_slack_workspace()
     report_discord()
+    configure_discord_workspace()
     install_zathura()
     set_zathura_pdf_default()
     install_latex_and_carlito()

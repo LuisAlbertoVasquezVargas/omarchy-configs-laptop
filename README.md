@@ -149,7 +149,7 @@ window between launches so the browser creates a new one.
 
 ## Slack
 
-`python setup.py` only prints `Slack can be installed as a service.`
+`python setup.py` prints `Slack can be installed as a service.`
 Slack installation and sign-in are manual steps. The web-app option is:
 
 ```bash
@@ -163,16 +163,57 @@ workspace. Allow notifications when the browser prompts for permission.
 If Brave is the configured default browser, Slack opens in a standalone Brave
 web-app window.
 
+The script also configures new native Slack and Slack web-app windows to use
+the launching monitor's ninth workspace (**Super + 9**) when it has no windows.
+Placement is silent: the current workspace stays visible. If workspace 9 is
+occupied, the new Slack window stays on the workspace where it opens. Ordinary
+browser tabs are unaffected. Reloading the configuration, focusing Slack, or
+manually moving an existing window does not rerun placement.
+
+This restores the Slack behavior from the PC repository's
+[`b6b17c8` chat-placement rule](https://github.com/LuisAlbertoVasquezVargas/omarchy-configs/blob/b6b17c8/scripts/chat-workspaces.lua),
+using Omarchy 4.5's native per-monitor workspace mapping rather than a fixed
+global workspace ID. On another monitor, the ninth workspace may have an internal
+ID of 19, 29, or another block's ninth ID.
+
+The handler lives in `config/hypr/slack-workspace.lua`. As with WhatsApp, setup
+backs up `~/.config/hypr/hyprland.lua`, appends the handler, validates Lua syntax,
+and reloads Hyprland. Failed validation restores the backup. Existing matching
+handlers are skipped even when another configuration follows them in the file.
+
+To verify, open a new Slack window with workspace 9 empty and check that it lands
+there without switching workspaces. Repeat with a window already on workspace 9;
+the new Slack window should stay on the current workspace. Focusing an existing
+Slack window does not create a new window or test the rule.
+
 ## Discord
 
 Discord comes preinstalled as an Omarchy web app in this version.
 `python setup.py` reads the current Omarchy version with `omarchy version` and
 prints `Discord already installed in version CURRENT_VERSION`. This step only
-prints the message. Open the app launcher with `Super + Space`, search for
-**Discord**, and sign in manually.
+reports installation; workspace placement is configured separately below. Open
+the app launcher with `Super + Space`, search for **Discord**, and sign in manually.
 
 If Brave is the configured default browser, Discord opens in a standalone Brave
 web-app window.
+
+The script configures new Discord web-app and native Discord windows to use the
+launching monitor's eighth workspace (**Super + 8**) when it has no windows.
+Placement is silent: the current workspace stays visible. If workspace 8 is
+occupied, Discord stays on the workspace where it opens. This restores the PC
+chat-placement rule using Omarchy 4.5's native per-monitor mapping; another
+monitor's eighth workspace may have internal ID 18, 28, or another block's
+eighth ID.
+
+The handler lives in `config/hypr/discord-workspace.lua` and uses the same backup,
+Lua validation, reload, rollback, and skip behavior as the WhatsApp and Slack
+steps. It only runs when a new window opens. Ordinary browser tabs, configuration
+reloads, and later manual window moves do not trigger placement.
+
+To verify, create a new Discord window with workspace 8 empty, then repeat with
+another window on workspace 8. The first should move silently to workspace 8;
+the second should stay on the current workspace. Focusing an existing Discord
+window does not test the rule.
 
 ## Zathura
 
